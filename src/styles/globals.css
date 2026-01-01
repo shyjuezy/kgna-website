@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* KGNA Brand Colors */
+    --primary: 25 84% 50%; /* Deep Saffron #D97706 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 15 73% 28%; /* Rich Burgundy #7C2D12 */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 30 80% 37%; /* Gold #B45309 */
+    --accent-foreground: 0 0% 100%;
+
+    /* Background - Warm neutrals */
+    --background: 48 100% 96%; /* Light cream #FEFCE8 */
+    --foreground: 20 14% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 20 14% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14% 4%;
+
+    --muted: 24 5% 45%; /* #78716C */
+    --muted-foreground: 22 3% 64%; /* #A8A29E */
+
+    --border: 20 5% 90%;
+    --input: 20 5% 90%;
+    --ring: 25 84% 50%;
+
+    --radius: 0.5rem;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 20 14% 10%; /* #1C1917 */
+    --foreground: 20 5% 96%; /* #F5F5F4 */
+
+    --card: 20 14% 13%;
+    --card-foreground: 20 5% 96%;
+
+    --popover: 20 14% 13%;
+    --popover-foreground: 20 5% 96%;
+
+    --primary: 25 84% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 15 73% 28%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 20 14% 21%;
+    --muted-foreground: 22 3% 64%;
+
+    --accent: 30 80% 37%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 20 14% 18%;
+    --input: 20 14% 18%;
+    --ring: 25 84% 50%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
