@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Metadata } from "next";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Mail,
-  Phone,
   MapPin,
-  Clock,
   Send,
   Facebook,
   Instagram,
@@ -25,6 +22,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ORGANIZATION_INFO } from "@/lib/constants";
+import type { CmsPageContent } from "@/lib/cms";
 
 // export const metadata: Metadata = {
 //   title: "Contact Us",
@@ -79,6 +77,7 @@ const faqData = [
 ];
 
 export default function ContactPage() {
+  const [cmsContent, setCmsContent] = useState<CmsPageContent | null>(null);
   const [formData, setFormData] = useState<ContactFormData>({
     firstName: "",
     lastName: "",
@@ -91,6 +90,33 @@ export default function ContactPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+    const value = props?.[key];
+    return typeof value === "string" && value.trim() ? value : fallback;
+  };
+  const list = <T extends Record<string, unknown>>(props: Record<string, unknown> | undefined, key: string, fallback: T[]) => {
+    const value = props?.[key];
+    return Array.isArray(value) ? (value as T[]) : fallback;
+  };
+  const hero = getSection("hero");
+  const info = getSection("info") ?? getSection("contactInfo");
+  const social = getSection("social");
+  const form = getSection("form");
+  const faq = getSection("faq");
+  const faqs = list(faq, "items", faqData);
+  const socialLinks = list<Record<string, unknown>>(social, "items", list<Record<string, unknown>>(social, "links", [
+    { label: "Facebook", url: "https://facebook.com/kgnaus" },
+    { label: "Instagram", url: "https://instagram.com/kgnaus" },
+    { label: "Twitter", url: "https://twitter.com/kgnaus" },
+  ]));
+
+  useEffect(() => {
+    fetch("/api/cms/contact")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => setCmsContent(payload?.content ?? null))
+      .catch(() => setCmsContent(null));
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -145,7 +171,7 @@ export default function ContactPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-serif font-bold mb-4"
             >
-              Get in Touch
+              {text(hero, "heading", "Get in Touch")}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -153,8 +179,11 @@ export default function ContactPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-muted-foreground"
             >
-              We&apos;re here to help and answer any questions you might have.
-              We look forward to hearing from you!
+              {text(
+                hero,
+                "body",
+                "We're here to help and answer any questions you might have. We look forward to hearing from you!",
+              )}
             </motion.p>
           </div>
         </div>
@@ -170,25 +199,17 @@ export default function ContactPage() {
                 {/* Contact Details Card */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-xl font-serif">Contact Information</CardTitle>
+                    <CardTitle className="text-xl font-serif">
+                      {text(info, "heading", "Contact Information")}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-start gap-3">
                       <Mail className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <a href={`mailto:${ORGANIZATION_INFO.email}`} className="text-sm text-muted-foreground hover:text-primary">
-                          {ORGANIZATION_INFO.email}
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Phone className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Phone</p>
-                        <a href={`tel:${ORGANIZATION_INFO.phone}`} className="text-sm text-muted-foreground hover:text-primary">
-                          {ORGANIZATION_INFO.phone}
+                        <a href={`mailto:${text(info, "email", ORGANIZATION_INFO.email)}`} className="text-sm text-muted-foreground hover:text-primary">
+                          {text(info, "email", ORGANIZATION_INFO.email)}
                         </a>
                       </div>
                     </div>
@@ -203,45 +224,41 @@ export default function ContactPage() {
                         </p>
                       </div>
                     </div>
-
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Office Hours</p>
-                        <p className="text-sm text-muted-foreground">
-                          Monday - Friday: 9:00 AM - 5:00 PM<br />
-                          Saturday: 10:00 AM - 2:00 PM<br />
-                          Sunday: Closed
-                        </p>
-                      </div>
-                    </div>
                   </CardContent>
                 </Card>
 
                 {/* Social Media Card */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-xl font-serif">Follow Us</CardTitle>
+                    <CardTitle className="text-xl font-serif">
+                      {text(social, "heading", "Follow Us")}
+                    </CardTitle>
                     <CardDescription>
-                      Stay connected with our community on social media
+                      {text(social, "body", "Stay connected with our community on social media")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <a href="https://facebook.com/kgnaus" target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                      <Facebook className="h-5 w-5 text-blue-600" />
-                      <span className="text-sm">Facebook</span>
-                    </a>
-                    <a href="https://instagram.com/kgnaus" target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                      <Instagram className="h-5 w-5 text-pink-600" />
-                      <span className="text-sm">Instagram</span>
-                    </a>
-                    <a href="https://twitter.com/kgnaus" target="_blank" rel="noopener noreferrer"
-                       className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors">
-                      <Twitter className="h-5 w-5 text-blue-400" />
-                      <span className="text-sm">Twitter</span>
-                    </a>
+                    {socialLinks.map((link) => {
+                      const label = String(link.label ?? "Social");
+                      const Icon = label.toLowerCase().includes("instagram")
+                        ? Instagram
+                        : label.toLowerCase().includes("twitter")
+                          ? Twitter
+                          : Facebook;
+
+                      return (
+                        <a
+                          key={label}
+                          href={String(link.url ?? link.href ?? "#")}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                        >
+                          <Icon className="h-5 w-5 text-primary" />
+                          <span className="text-sm">{label}</span>
+                        </a>
+                      );
+                    })}
                   </CardContent>
                 </Card>
               </div>
@@ -250,9 +267,11 @@ export default function ContactPage() {
               <div className="lg:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-2xl font-serif">Send us a Message</CardTitle>
+                    <CardTitle className="text-2xl font-serif">
+                      {text(form, "heading", "Send us a Message")}
+                    </CardTitle>
                     <CardDescription>
-                      Fill out the form below and we&apos;ll get back to you as soon as possible
+                      {text(form, "body", "Fill out the form below and we'll get back to you as soon as possible")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -408,15 +427,15 @@ export default function ContactPage() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-serif font-bold mb-4">
-                Frequently Asked Questions
+                {text(faq, "heading", "Frequently Asked Questions")}
               </h2>
               <p className="text-muted-foreground">
-                Find answers to common questions about KGNA
+                {text(faq, "body", "Find answers to common questions about KGNA")}
               </p>
             </div>
 
             <div className="space-y-4">
-              {faqData.map((faq, index) => (
+              {faqs.map((faq, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, y: 20 }}
@@ -454,26 +473,6 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Map Section (Placeholder) */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <Card className="overflow-hidden">
-              <div className="relative h-96 bg-muted flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    Interactive map will be displayed here
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {ORGANIZATION_INFO.address.street}, {ORGANIZATION_INFO.address.city}, {ORGANIZATION_INFO.address.state}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

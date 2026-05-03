@@ -25,7 +25,17 @@ const pillars = [
   }
 ];
 
-export function MissionStatement() {
+type MissionStatementProps = {
+  heading?: string;
+  body?: string;
+  items?: Array<{ title?: string; description?: string }>;
+};
+
+export function MissionStatement({
+  heading = "Our Mission",
+  body = MISSION_STATEMENT,
+  items = pillars,
+}: MissionStatementProps) {
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -36,14 +46,16 @@ export function MissionStatement() {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Our Mission</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">{heading}</h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            {MISSION_STATEMENT}
+            {body}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-          {pillars.map((pillar, index) => (
+          {items.map((pillar, index) => {
+            const Icon = pillars[index]?.icon ?? Heart;
+            return (
             <motion.div
               key={pillar.title}
               initial={{ opacity: 0, y: 20 }}
@@ -54,14 +66,15 @@ export function MissionStatement() {
               <Card className="p-6 h-full hover:shadow-lg transition-shadow">
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <pillar.icon className="h-8 w-8 text-primary" />
+                    <Icon className="h-8 w-8 text-primary" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">{pillar.title}</h3>
                   <p className="text-muted-foreground">{pillar.description}</p>
                 </div>
               </Card>
             </motion.div>
-          ))}
+            );
+          })}
         </div>
 
         <motion.div

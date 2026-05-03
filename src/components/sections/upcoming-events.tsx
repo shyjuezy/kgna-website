@@ -54,7 +54,35 @@ const categoryColors = {
   fundraiser: "bg-orange-500"
 };
 
-export function UpcomingEvents() {
+type UpcomingEventsProps = {
+  heading?: string;
+  body?: string;
+  items?: Array<Record<string, unknown>>;
+};
+
+function eventFromCms(item: Record<string, unknown>, index: number): Event {
+  const category = typeof item.category === "string" ? item.category : "cultural";
+
+  return {
+    id: typeof item.id === "string" ? item.id : String(index + 1),
+    title: typeof item.title === "string" ? item.title : "Community Event",
+    description: typeof item.description === "string" ? item.description : "",
+    date: new Date(typeof item.date === "string" ? item.date : Date.now()),
+    time: typeof item.time === "string" ? item.time : "",
+    location: typeof item.location === "string" ? item.location : "",
+    category: category as Event["category"],
+    imageUrl: typeof item.image === "string" ? item.image : PLACEHOLDER_IMAGES.culturalEvent,
+    registrationUrl: typeof item.registrationUrl === "string" ? item.registrationUrl : "#",
+  };
+}
+
+export function UpcomingEvents({
+  heading = "Upcoming Events",
+  body = "Join us in celebrating Kashmiri culture through our community events and gatherings",
+  items,
+}: UpcomingEventsProps) {
+  const events = items?.length ? items.map(eventFromCms) : mockEvents;
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -65,14 +93,14 @@ export function UpcomingEvents() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Upcoming Events</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{heading}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Join us in celebrating Kashmiri culture through our community events and gatherings
+            {body}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-          {mockEvents.map((event, index) => (
+          {events.map((event, index) => (
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}
@@ -83,13 +111,13 @@ export function UpcomingEvents() {
               <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden">
                 <div className="relative h-48">
                   <Image
-                    src={event.imageUrl!}
+                              src={event.imageUrl ?? PLACEHOLDER_IMAGES.culturalEvent}
                     alt={event.title}
                     fill
                     className="object-cover"
                   />
                   <Badge
-                    className={`absolute top-4 right-4 ${categoryColors[event.category]}`}
+                    className={`absolute top-4 right-4 ${categoryColors[event.category] ?? "bg-slate-500"}`}
                   >
                     {event.category}
                   </Badge>

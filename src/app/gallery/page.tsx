@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Metadata } from "next";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ import {
   LayoutGrid
 } from "lucide-react";
 import { motion } from "framer-motion";
+import type { CmsPageContent } from "@/lib/cms";
 
 // export const metadata: Metadata = {
 //   title: "Photo Gallery",
@@ -28,8 +28,19 @@ import { motion } from "framer-motion";
 // Gallery categories
 type GalleryCategory = "all" | "events" | "culture" | "landscape" | "community" | "heritage";
 
+type GalleryItem = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  category: GalleryCategory;
+  date?: string;
+  location?: string;
+  featured?: boolean;
+};
+
 // Gallery items data
-const galleryItems = [
+const galleryItems: GalleryItem[] = [
   // Events
   {
     id: 1,
@@ -177,15 +188,53 @@ const categoryData = [
 ];
 
 export default function GalleryPage() {
+  const [cmsContent, setCmsContent] = useState<CmsPageContent | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<GalleryCategory>("all");
-  const [selectedImage, setSelectedImage] = useState<typeof galleryItems[0] | null>(null);
+  const [selectedImage, setSelectedImage] = useState<GalleryItem | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "masonry">("grid");
+  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+    const value = props?.[key];
+    return typeof value === "string" && value.trim() ? value : fallback;
+  };
+  const hero = getSection("hero");
+  const gallery = getSection("gallery");
+  const featured = getSection("featured") ?? gallery;
+  const cta = getSection("cta") ?? gallery;
+  const cmsGalleryItems = Array.isArray(gallery?.items)
+    ? gallery.items.map((item, index) => {
+        const record = item as Record<string, unknown>;
+        return {
+          id: Number(record.id ?? index + 1),
+          title: typeof record.title === "string" ? record.title : "Gallery photo",
+          description: typeof record.description === "string" ? record.description : "",
+          image: typeof record.image === "string" ? record.image : PLACEHOLDER_IMAGES.community,
+          category: (typeof record.category === "string" ? record.category : "community") as GalleryCategory,
+          date: typeof record.date === "string" ? record.date : undefined,
+          location: typeof record.location === "string" ? record.location : undefined,
+          featured: record.featured === "yes",
+        };
+      })
+    : galleryItems;
+
+  useEffect(() => {
+    fetch("/api/cms/gallery")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => setCmsContent(payload?.content ?? null))
+      .catch(() => setCmsContent(null));
+  }, []);
 
   const filteredItems = selectedCategory === "all"
-    ? galleryItems
-    : galleryItems.filter(item => item.category === selectedCategory);
+    ? cmsGalleryItems
+    : cmsGalleryItems.filter(item => item.category === selectedCategory);
 
-  const featuredItems = galleryItems.filter(item => item.featured);
+  const featuredItems = cmsGalleryItems.filter(item => item.featured);
+  const currentCategoryData = categoryData.map((category) => ({
+    ...category,
+    count: category.value === "all"
+      ? cmsGalleryItems.length
+      : cmsGalleryItems.filter((item) => item.category === category.value).length,
+  }));
 
   return (
     <div className="min-h-screen">
@@ -198,7 +247,7 @@ export default function GalleryPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-serif font-bold mb-4"
             >
-              Photo Gallery
+              {text(hero, "heading", "Photo Gallery")}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -206,8 +255,11 @@ export default function GalleryPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-muted-foreground"
             >
-              Capturing moments from our events, cultural celebrations, and the breathtaking
-              beauty of Kashmir through the lens.
+              {text(
+                hero,
+                "body",
+                "Capturing moments from our events, cultural celebrations, and the breathtaking beauty of Kashmir through the lens.",
+              )}
             </motion.p>
           </div>
         </div>
@@ -217,7 +269,9 @@ export default function GalleryPage() {
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <h2 className="text-2xl font-serif font-bold mb-6">Featured Photos</h2>
+            <h2 className="text-2xl font-serif font-bold mb-6">
+              {text(featured, "heading", text(featured, "featuredHeading", "Featured Photos"))}
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {featuredItems.map((item, index) => (
                 <motion.div
@@ -259,7 +313,7 @@ export default function GalleryPage() {
             {/* Category Filters */}
             <div className="mb-8">
               <div className="flex flex-wrap gap-2 justify-center">
-                {categoryData.map((category) => {
+                {currentCategoryData.map((category) => {
                   const Icon = category.icon;
                   return (
                     <Button
@@ -424,19 +478,26 @@ export default function GalleryPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-serif font-bold mb-4">
-              Share Your Memories
+              {text(cta, "heading", text(cta, "ctaHeading", "Share Your Memories"))}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Have photos from our events or cultural celebrations? We&apos;d love to feature
-              them in our gallery. Share your memories with the community!
+              {text(
+                cta,
+                "body",
+                text(
+                  cta,
+                  "ctaBody",
+                  "Have photos from our events or cultural celebrations? We'd love to feature them in our gallery. Share your memories with the community!",
+                ),
+              )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-primary hover:bg-primary/90">
                 <Camera className="mr-2 h-5 w-5" />
-                Submit Photos
+                {text(cta, "primary", "Submit Photos")}
               </Button>
               <Button size="lg" variant="outline">
-                View on Instagram
+                {text(cta, "secondary", "View on Instagram")}
               </Button>
             </div>
           </div>
