@@ -7,7 +7,21 @@ import { motion } from "framer-motion";
 
 const donationAmounts = [25, 50, 100, 250];
 
-export function DonationCTA() {
+type DonationCTAProps = {
+  heading?: string;
+  body?: string;
+  monthlyHeading?: string;
+  monthlyBody?: string;
+  cta?: string;
+};
+
+export function DonationCTA({
+  heading = "Support Our Mission",
+  body = "Your generosity helps us preserve Kashmiri heritage, support our community, and create lasting connections for future generations.",
+  monthlyHeading = "Become a Monthly Supporter",
+  monthlyBody = "Join our community of sustaining donors and make a lasting impact with regular monthly contributions.",
+  cta = "Become a Monthly Supporter",
+}: DonationCTAProps) {
   return (
     <section className="py-20 bg-gradient-to-br from-primary/10 to-accent/10">
       <div className="container mx-auto px-4">
@@ -19,11 +33,10 @@ export function DonationCTA() {
           className="max-w-4xl mx-auto text-center"
         >
           <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
-            Support Our Mission
+            {heading}
           </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Your generosity helps us preserve Kashmiri heritage, support our community,
-            and create lasting connections for future generations.
+            {body}
           </p>
 
           {/* Quick Donation Buttons */}
@@ -52,10 +65,9 @@ export function DonationCTA() {
 
           {/* Monthly Support CTA */}
           <div className="bg-card rounded-lg p-8 shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4">Become a Monthly Supporter</h3>
+            <h3 className="text-2xl font-semibold mb-4">{monthlyHeading}</h3>
             <p className="text-muted-foreground mb-6">
-              Join our community of sustaining donors and make a lasting impact with
-              regular monthly contributions.
+              {monthlyBody}
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -76,7 +88,7 @@ export function DonationCTA() {
             <Link href="/donate?frequency=monthly">
               <Button size="lg" className="bg-primary hover:bg-primary/90">
                 <Heart className="mr-2 h-5 w-5" />
-                Become a Monthly Supporter
+                {cta}
               </Button>
             </Link>
           </div>

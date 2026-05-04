@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getCmsPage, getSection, listProp, optionalTextProp, textProp } from "@/lib/cms";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
 import {
   Palette,
@@ -15,8 +16,7 @@ import {
   Heart,
   Sparkles,
   Mountain,
-  Languages,
-  Calendar
+  Languages
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -83,33 +83,6 @@ const traditionalCuisine = [
   }
 ];
 
-const festivals = [
-  {
-    name: "Navroz",
-    description: "Persian New Year celebrating the arrival of spring",
-    date: "March 21",
-    significance: "Marks renewal, hope, and the triumph of good over evil"
-  },
-  {
-    name: "Shivratri (Herath)",
-    description: "The great night of Shiva, celebrated uniquely in Kashmir",
-    date: "February/March",
-    significance: "Celebrates the marriage of Shiva and Parvati with unique Kashmiri rituals"
-  },
-  {
-    name: "Baisakhi",
-    description: "Harvest festival marking the solar new year",
-    date: "April 13-14",
-    significance: "Celebrates the harvest season and new beginnings"
-  },
-  {
-    name: "Kheer Bhawani Festival",
-    description: "Annual festival at the sacred Kheer Bhawani temple",
-    date: "May/June",
-    significance: "Devotees gather to worship the goddess Ragnya Devi"
-  }
-];
-
 const musicAndDance = [
   {
     name: "Rouf",
@@ -133,7 +106,19 @@ const musicAndDance = [
   }
 ];
 
-export default function CulturePage() {
+export default async function CulturePage() {
+  const content = await getCmsPage("culture");
+  const hero = getSection(content, "hero");
+  const legacy = getSection(content, "legacy");
+  const arts = getSection(content, "arts");
+  const cuisine = getSection(content, "cuisine");
+  const music = getSection(content, "music");
+  const language = getSection(content, "language");
+  const cta = getSection(content, "cta");
+  const artItems = listProp(arts, "items", culturalArts);
+  const cuisineItems = listProp(cuisine, "items", traditionalCuisine);
+  const musicItems = listProp<Record<string, unknown>>(music, "items", musicAndDance);
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -141,12 +126,14 @@ export default function CulturePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-              Kashmiri Culture & Heritage
+              {textProp(hero, "heading", "Kashmiri Culture & Heritage")}
             </h1>
             <p className="text-lg text-muted-foreground">
-              Discover the rich tapestry of Kashmir&apos;s cultural heritage - from ancient arts
-              and crafts to vibrant festivals, traditional cuisine, and timeless customs that
-              define our identity.
+              {textProp(
+                hero,
+                "body",
+                "Discover the rich tapestry of Kashmir's cultural heritage - from ancient arts and crafts to vibrant festivals, traditional cuisine, and timeless customs that define our identity.",
+              )}
             </p>
           </div>
         </div>
@@ -160,19 +147,27 @@ export default function CulturePage() {
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <Heart className="h-8 w-8 text-primary" />
-                  <h2 className="text-2xl font-serif font-bold">Our Cultural Legacy</h2>
+                  <h2 className="text-2xl font-serif font-bold">
+                    {textProp(legacy, "heading", "Our Cultural Legacy")}
+                  </h2>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Kashmir&apos;s culture is a unique blend of various influences that have shaped
-                  its identity over millennia. Known as &quot;Paradise on Earth,&quot; Kashmir has been
-                  a melting pot of Persian, Central Asian, and Indian influences, creating a
-                  distinctive cultural identity.
+                  {textProp(
+                    legacy,
+                    "body",
+                    "Kashmir's culture is a unique blend of various influences that have shaped its identity over millennia. Known as \"Paradise on Earth,\" Kashmir has been a melting pot of Persian, Central Asian, and Indian influences, creating a distinctive cultural identity.",
+                  )}
                 </p>
                 <p className="text-muted-foreground">
-                  From the intricate patterns of our handicrafts to the soul-stirring melodies
-                  of our music, from the aromatic spices of our cuisine to the graceful movements
-                  of our dances, every aspect of Kashmiri culture tells a story of resilience,
-                  creativity, and deep spiritual connection.
+                  {textProp(
+                    legacy,
+                    "body2",
+                    textProp(
+                      legacy,
+                      "secondaryBody",
+                      "From the intricate patterns of our handicrafts to the soul-stirring melodies of our music, from the aromatic spices of our cuisine to the graceful movements of our dances, every aspect of Kashmiri culture tells a story of resilience, creativity, and deep spiritual connection.",
+                    ),
+                  )}
                 </p>
               </CardContent>
             </Card>
@@ -185,19 +180,26 @@ export default function CulturePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-serif font-bold mb-4">Traditional Arts & Crafts</h2>
+              <h2 className="text-3xl font-serif font-bold mb-4">
+                {textProp(arts, "heading", "Traditional Arts & Crafts")}
+              </h2>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Kashmir&apos;s handicrafts are world-renowned for their exquisite beauty and
-                meticulous craftsmanship passed down through generations.
+                {textProp(
+                  arts,
+                  "body",
+                  "Kashmir's handicrafts are world-renowned for their exquisite beauty and meticulous craftsmanship passed down through generations.",
+                )}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {culturalArts.map((art) => (
+              {artItems.map((art) => {
+                const Icon = culturalArts.find((item) => item.name === art.name)?.icon ?? Sparkles;
+                return (
                 <Card key={art.name} className="overflow-hidden">
                   <div className="relative h-48">
                     <Image
-                      src={art.image}
+                      src={optionalTextProp(art, "image") ?? optionalTextProp(art, "imageUrl") ?? PLACEHOLDER_IMAGES.tradition}
                       alt={art.name}
                       fill
                       className="object-cover"
@@ -205,7 +207,7 @@ export default function CulturePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-4 left-4 text-white">
                       <div className="flex items-center gap-2 mb-2">
-                        <art.icon className="h-5 w-5" />
+                        <Icon className="h-5 w-5" />
                         <h3 className="text-xl font-semibold">{art.name}</h3>
                       </div>
                     </div>
@@ -215,7 +217,8 @@ export default function CulturePage() {
                     <p className="text-sm">{art.details}</p>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -228,16 +231,21 @@ export default function CulturePage() {
             <div className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Utensils className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-serif font-bold">Kashmiri Cuisine</h2>
+                <h2 className="text-3xl font-serif font-bold">
+                  {textProp(cuisine, "heading", "Kashmiri Cuisine")}
+                </h2>
               </div>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                A culinary journey through the flavors of Kashmir, where every dish tells a story
-                of tradition, hospitality, and celebration.
+                {textProp(
+                  cuisine,
+                  "body",
+                  "A culinary journey through the flavors of Kashmir, where every dish tells a story of tradition, hospitality, and celebration.",
+                )}
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {traditionalCuisine.map((dish) => (
+              {cuisineItems.map((dish) => (
                 <Card key={dish.name}>
                   <CardHeader>
                     <CardTitle>{dish.name}</CardTitle>
@@ -247,7 +255,7 @@ export default function CulturePage() {
                     <div className="mb-4">
                       <h4 className="font-semibold text-sm mb-2">Key Elements:</h4>
                       <div className="flex flex-wrap gap-2">
-                        {dish.highlights.map((item) => (
+                        {(Array.isArray(dish.highlights) ? dish.highlights : String(dish.highlights ?? "").split(",")).map((item) => (
                           <Badge key={item} variant="secondary">{item}</Badge>
                         ))}
                       </div>
@@ -268,11 +276,16 @@ export default function CulturePage() {
             <div className="text-center mb-12">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Music className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-serif font-bold">Music & Dance</h2>
+                <h2 className="text-3xl font-serif font-bold">
+                  {textProp(music, "heading", "Music & Dance")}
+                </h2>
               </div>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                The rhythm and melodies that echo through the valleys, expressing joy,
-                devotion, and the soul of Kashmir.
+                {textProp(
+                  music,
+                  "body",
+                  "The rhythm and melodies that echo through the valleys, expressing joy, devotion, and the soul of Kashmir.",
+                )}
               </p>
             </div>
 
@@ -284,17 +297,17 @@ export default function CulturePage() {
 
               <TabsContent value="dance" className="mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {musicAndDance.filter((item) => item.name === "Rouf" || item.name === "Hafiza").map((dance) => (
-                    <Card key={dance.name}>
+                  {musicItems.filter((item) => item.kind === "dance" || item.name === "Rouf" || item.name === "Hafiza").map((dance) => (
+                    <Card key={String(dance.name)}>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Users className="h-5 w-5 text-primary" />
-                          {dance.name}
+                          {String(dance.name)}
                         </CardTitle>
-                        <CardDescription>{dance.description}</CardDescription>
+                        <CardDescription>{String(dance.description ?? "")}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm">{dance.details}</p>
+                        <p className="text-sm">{String(dance.details ?? "")}</p>
                       </CardContent>
                     </Card>
                   ))}
@@ -303,56 +316,23 @@ export default function CulturePage() {
 
               <TabsContent value="music" className="mt-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {musicAndDance.filter((item) => item.name === "Santoor" || item.name === "Rabab").map((instrument) => (
-                    <Card key={instrument.name}>
+                  {musicItems.filter((item) => item.kind === "music" || item.name === "Santoor" || item.name === "Rabab").map((instrument) => (
+                    <Card key={String(instrument.name)}>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Music className="h-5 w-5 text-primary" />
-                          {instrument.name}
+                          {String(instrument.name)}
                         </CardTitle>
-                        <CardDescription>{instrument.description}</CardDescription>
+                        <CardDescription>{String(instrument.description ?? "")}</CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-sm">{instrument.details}</p>
+                        <p className="text-sm">{String(instrument.details ?? "")}</p>
                       </CardContent>
                     </Card>
                   ))}
                 </div>
               </TabsContent>
             </Tabs>
-          </div>
-        </div>
-      </section>
-
-      {/* Festivals Section */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-12">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <Calendar className="h-8 w-8 text-primary" />
-                <h2 className="text-3xl font-serif font-bold">Festivals & Celebrations</h2>
-              </div>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                Throughout the year, Kashmir celebrates diverse festivals that reflect our
-                plural cultural heritage and communal harmony.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {festivals.map((festival) => (
-                <Card key={festival.name} className="h-full">
-                  <CardHeader>
-                    <Badge className="w-fit mb-2">{festival.date}</Badge>
-                    <CardTitle className="text-lg">{festival.name}</CardTitle>
-                    <CardDescription>{festival.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground">{festival.significance}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
         </div>
       </section>
@@ -365,18 +345,23 @@ export default function CulturePage() {
               <CardContent className="p-8">
                 <div className="flex items-center gap-3 mb-4">
                   <Languages className="h-8 w-8 text-primary" />
-                  <h2 className="text-2xl font-serif font-bold">Kashmiri Language</h2>
+                  <h2 className="text-2xl font-serif font-bold">
+                    {textProp(language, "heading", "Kashmiri Language")}
+                  </h2>
                 </div>
                 <p className="text-muted-foreground mb-4">
-                  Kashmiri (کٲشُر), also known as Koshur, is an Indo-Aryan language spoken by
-                  approximately 7 million people. It has a rich literary tradition dating back
-                  to the 14th century, with poets like Lal Ded and Habba Khatoon contributing
-                  to its classical literature.
+                  {textProp(
+                    language,
+                    "body",
+                    "Kashmiri, also known as Koshur, is an Indo-Aryan language spoken by approximately 7 million people. It has a rich literary tradition dating back to the 14th century.",
+                  )}
                 </p>
                 <p className="text-muted-foreground mb-6">
-                  The language uses both Perso-Arabic and Devanagari scripts and is known for
-                  its unique phonetic features and rich vocabulary influenced by Sanskrit,
-                  Persian, and Arabic.
+                  {textProp(
+                    language,
+                    "body2",
+                    "The language uses both Perso-Arabic and Devanagari scripts and is known for its unique phonetic features and rich vocabulary influenced by Sanskrit, Persian, and Arabic.",
+                  )}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="text-center p-4 bg-background rounded-lg">
@@ -403,21 +388,24 @@ export default function CulturePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-serif font-bold mb-4">
-              Preserve Our Heritage
+              {textProp(cta, "heading", "Preserve Our Heritage")}
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Join us in preserving and celebrating Kashmiri culture for future generations.
-              Participate in our cultural programs, workshops, and events.
+              {textProp(
+                cta,
+                "body",
+                "Join us in preserving and celebrating Kashmiri culture for future generations. Participate in our cultural programs, workshops, and events.",
+              )}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/events">
                 <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  View Cultural Events
+                  {textProp(cta, "primary", "View Cultural Events")}
                 </Button>
               </Link>
               <Link href="/contact">
                 <Button size="lg" variant="outline">
-                  Get Involved
+                  {textProp(cta, "secondary", "Get Involved")}
                 </Button>
               </Link>
             </div>

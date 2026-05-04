@@ -6,7 +6,21 @@ import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { Mail, CheckCircle } from "lucide-react";
 
-export function NewsletterSignup() {
+type NewsletterSignupProps = {
+  heading?: string;
+  body?: string;
+  placeholder?: string;
+  button?: string;
+  privacy?: string;
+};
+
+export function NewsletterSignup({
+  heading = "Stay Connected",
+  body = "Join our newsletter to receive updates about upcoming events, cultural programs, and community initiatives.",
+  placeholder = "Enter your email address",
+  button = "Subscribe",
+  privacy = "We respect your privacy. Unsubscribe at any time.",
+}: NewsletterSignupProps) {
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -39,11 +53,10 @@ export function NewsletterSignup() {
           <div className="bg-card rounded-lg p-8 md:p-12 shadow-lg">
             <Mail className="h-12 w-12 text-primary mx-auto mb-4" />
             <h2 className="text-2xl md:text-3xl font-serif font-bold mb-4">
-              Stay Connected
+              {heading}
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join our newsletter to receive updates about upcoming events, cultural
-              programs, and community initiatives.
+              {body}
             </p>
 
             {isSubmitted ? (
@@ -59,7 +72,7 @@ export function NewsletterSignup() {
               <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
                 <Input
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder={placeholder}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -72,13 +85,13 @@ export function NewsletterSignup() {
                   className="bg-primary hover:bg-primary/90"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Subscribing..." : "Subscribe"}
+                  {isSubmitting ? "Subscribing..." : button}
                 </Button>
               </form>
             )}
 
             <p className="text-xs text-muted-foreground mt-4">
-              We respect your privacy. Unsubscribe at any time.
+              {privacy}
             </p>
           </div>
         </motion.div>

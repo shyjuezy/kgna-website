@@ -7,13 +7,31 @@ import { HERO_CONTENT, PLACEHOLDER_IMAGES } from "@/lib/constants";
 import { ArrowRight, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 
-export function Hero() {
+type HeroProps = {
+  headline?: string;
+  subheadline?: string;
+  cta1?: string;
+  cta2?: string;
+  cta1Href?: string;
+  cta2Href?: string;
+  image?: string;
+};
+
+export function Hero({
+  headline = HERO_CONTENT.headline,
+  subheadline = HERO_CONTENT.subheadline,
+  cta1 = HERO_CONTENT.cta1,
+  cta2 = HERO_CONTENT.cta2,
+  cta1Href = "/events",
+  cta2Href = "/donate",
+  image = PLACEHOLDER_IMAGES.heroBackground,
+}: HeroProps) {
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <Image
-          src={PLACEHOLDER_IMAGES.heroBackground}
+          src={image}
           alt="Kashmir Valley"
           fill
           className="object-cover"
@@ -36,7 +54,7 @@ export function Hero() {
             transition={{ delay: 0.2, duration: 0.8 }}
             className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-6"
           >
-            {HERO_CONTENT.headline}
+            {headline}
           </motion.h1>
 
           <motion.p
@@ -45,7 +63,7 @@ export function Hero() {
             transition={{ delay: 0.4, duration: 0.8 }}
             className="text-lg md:text-xl mb-10 max-w-3xl mx-auto opacity-90"
           >
-            {HERO_CONTENT.subheadline}
+            {subheadline}
           </motion.p>
 
           <motion.div
@@ -54,19 +72,19 @@ export function Hero() {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            <Link href="/events">
+            <Link href={cta1Href}>
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white">
                 <Calendar className="mr-2 h-5 w-5" />
-                {HERO_CONTENT.cta1}
+                {cta1}
               </Button>
             </Link>
-            <Link href="/donate">
+            <Link href={cta2Href}>
               <Button
                 size="lg"
                 variant="outline"
                 className="border-white text-white bg-transparent hover:bg-white hover:text-black"
               >
-                {HERO_CONTENT.cta2}
+                {cta2}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>

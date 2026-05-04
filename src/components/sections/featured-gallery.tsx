@@ -57,7 +57,26 @@ const galleryImages = [
   }
 ];
 
-export function FeaturedGallery() {
+type FeaturedGalleryProps = {
+  heading?: string;
+  body?: string;
+  items?: Array<Record<string, unknown>>;
+};
+
+export function FeaturedGallery({
+  heading = "Photo Gallery",
+  body = "Capturing moments from our events and the beauty of Kashmir",
+  items,
+}: FeaturedGalleryProps) {
+  const images = items?.length
+    ? items.map((item, index) => ({
+        id: typeof item.id === "string" ? item.id : String(index + 1),
+        url: typeof item.image === "string" ? item.image : PLACEHOLDER_IMAGES.kashmir1,
+        title: typeof item.title === "string" ? item.title : "Gallery image",
+        category: typeof item.category === "string" ? item.category : "gallery",
+      }))
+    : galleryImages;
+
   return (
     <section className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -68,15 +87,15 @@ export function FeaturedGallery() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Photo Gallery</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{heading}</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Capturing moments from our events and the beauty of Kashmir
+            {body}
           </p>
         </motion.div>
 
         {/* Masonry Grid */}
         <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4">
-          {galleryImages.map((image, index) => (
+          {images.map((image, index) => (
             <motion.div
               key={image.id}
               initial={{ opacity: 0, scale: 0.95 }}

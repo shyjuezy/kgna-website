@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Metadata } from "next";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,7 @@ import {
   Tag
 } from "lucide-react";
 import { motion } from "framer-motion";
+import type { CmsPageContent } from "@/lib/cms";
 
 // export const metadata: Metadata = {
 //   title: "News & Updates",
@@ -165,10 +165,46 @@ const popularTags = [
 ];
 
 export default function NewsPage() {
+  const [cmsContent, setCmsContent] = useState<CmsPageContent | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<NewsCategory>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+    const value = props?.[key];
+    return typeof value === "string" && value.trim() ? value : fallback;
+  };
+  const hero = getSection("hero");
+  const articles = getSection("articles");
+  const cmsArticles = Array.isArray(articles?.items)
+    ? articles.items.map((item, index) => {
+        const record = item as Record<string, unknown>;
+        const tags = typeof record.tags === "string"
+          ? record.tags.split(",").map((tag) => tag.trim()).filter(Boolean)
+          : [];
 
-  const filteredArticles = newsArticles.filter(article => {
+        return {
+          id: Number(record.id ?? index + 1),
+          title: typeof record.title === "string" ? record.title : "News article",
+          excerpt: typeof record.excerpt === "string" ? record.excerpt : "",
+          category: (typeof record.category === "string" ? record.category : "community") as NewsCategory,
+          author: typeof record.author === "string" ? record.author : "KGNA",
+          date: typeof record.date === "string" ? record.date : "",
+          readTime: typeof record.readTime === "string" ? record.readTime : "3 min read",
+          image: typeof record.image === "string" ? record.image : PLACEHOLDER_IMAGES.community,
+          featured: record.featured === "yes",
+          tags,
+        };
+      })
+    : newsArticles;
+
+  useEffect(() => {
+    fetch("/api/cms/news")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => setCmsContent(payload?.content ?? null))
+      .catch(() => setCmsContent(null));
+  }, []);
+
+  const filteredArticles = cmsArticles.filter(article => {
     const matchesCategory = selectedCategory === "all" || article.category === selectedCategory;
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           article.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,7 +212,7 @@ export default function NewsPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const featuredArticles = newsArticles.filter(article => article.featured);
+  const featuredArticles = cmsArticles.filter(article => article.featured);
   const recentArticles = filteredArticles.slice(0, 6);
 
   return (
@@ -190,7 +226,7 @@ export default function NewsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-serif font-bold mb-4"
             >
-              News & Updates
+              {text(hero, "heading", "News & Updates")}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -198,7 +234,7 @@ export default function NewsPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-muted-foreground mb-8"
             >
-              Stay informed with the latest stories, announcements, and updates from our community
+              {text(hero, "body", "Stay informed with the latest stories, announcements, and updates from our community")}
             </motion.p>
 
             {/* Search Bar */}
@@ -226,7 +262,9 @@ export default function NewsPage() {
         <section className="py-12 bg-background">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
-              <h2 className="text-2xl font-serif font-bold mb-6">Featured Story</h2>
+              <h2 className="text-2xl font-serif font-bold mb-6">
+                {text(articles, "featuredHeading", "Featured Story")}
+              </h2>
               <Card className="overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div className="relative h-64 md:h-full">
@@ -293,8 +331,8 @@ export default function NewsPage() {
                     {categoryData.map((category) => {
                       const Icon = category.icon;
                       const count = category.value === "all"
-                        ? newsArticles.length
-                        : newsArticles.filter(a => a.category === category.value).length;
+                        ? cmsArticles.length
+                        : cmsArticles.filter(a => a.category === category.value).length;
                       return (
                         <button
                           key={category.value}
@@ -462,10 +500,14 @@ export default function NewsPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-2xl font-serif font-bold mb-4">
-              News Archive
+              {text(articles, "archiveHeading", "News Archive")}
             </h2>
             <p className="text-muted-foreground mb-6">
-              Looking for older news? Browse our complete archive of past articles and updates.
+              {text(
+                articles,
+                "archiveBody",
+                "Looking for older news? Browse our complete archive of past articles and updates.",
+              )}
             </p>
             <Button variant="outline">
               View Archive

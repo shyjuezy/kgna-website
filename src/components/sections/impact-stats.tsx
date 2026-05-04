@@ -65,7 +65,26 @@ const stats = [
   }
 ];
 
-export function ImpactStats() {
+type ImpactStatsProps = {
+  heading?: string;
+  body?: string;
+  items?: Array<{ value?: string; label?: string; suffix?: string; prefix?: string }>;
+};
+
+export function ImpactStats({
+  heading = "Our Impact",
+  body = "Building bridges across generations and preserving our heritage for the future",
+  items,
+}: ImpactStatsProps) {
+  const displayStats = items?.length
+    ? items.map((item) => ({
+        value: Number.parseInt(item.value ?? "0", 10) || 0,
+        label: item.label ?? "",
+        suffix: item.suffix ?? "",
+        prefix: item.prefix ?? "",
+      }))
+    : stats;
+
   return (
     <section className="py-20 bg-primary text-primary-foreground">
       <div className="container mx-auto px-4">
@@ -76,14 +95,14 @@ export function ImpactStats() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">Our Impact</h2>
+          <h2 className="text-3xl md:text-4xl font-serif font-bold mb-4">{heading}</h2>
           <p className="text-lg opacity-90 max-w-2xl mx-auto">
-            Building bridges across generations and preserving our heritage for the future
+            {body}
           </p>
         </motion.div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map((stat, index) => (
+          {displayStats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 20 }}

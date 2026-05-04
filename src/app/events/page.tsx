@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { Metadata } from "next";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { PLACEHOLDER_IMAGES } from "@/lib/constants";
 import { Calendar, MapPin, Clock, Users, Search, Filter, ChevronRight, Ticket } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Event } from "@/types";
+import type { CmsPageContent } from "@/lib/cms";
 
 // export const metadata: Metadata = {
 //   title: "Events",
@@ -141,9 +141,59 @@ const categoryLabels = {
 };
 
 export default function EventsPage() {
+  const [cmsContent, setCmsContent] = useState<CmsPageContent | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("upcoming");
+
+  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+    const value = props?.[key];
+    return typeof value === "string" && value.trim() ? value : fallback;
+  };
+  const list = (props: Record<string, unknown> | undefined, key: string, fallback: Event[]) => {
+    const value = props?.[key];
+    if (!Array.isArray(value)) {
+      return fallback;
+    }
+
+    return value.map((item, index) => {
+      const record = item as Record<string, unknown>;
+      const category = typeof record.category === "string" ? record.category : "cultural";
+
+      return {
+        id: typeof record.id === "string" ? record.id : String(index + 1),
+        title: typeof record.title === "string" ? record.title : "Community Event",
+        description: typeof record.description === "string" ? record.description : "",
+        date: new Date(typeof record.date === "string" ? record.date : Date.now()),
+        time: typeof record.time === "string" ? record.time : "",
+        location: typeof record.location === "string" ? record.location : "",
+        category: category as Event["category"],
+        imageUrl:
+          typeof record.image === "string"
+            ? record.image
+            : typeof record.imageUrl === "string"
+              ? record.imageUrl
+              : PLACEHOLDER_IMAGES.culturalEvent,
+        registrationUrl: typeof record.registrationUrl === "string" ? record.registrationUrl : "#",
+        isPastEvent: record.isPastEvent === "yes",
+      };
+    });
+  };
+  const hero = getSection("hero");
+  const events = getSection("events");
+  const upcoming = getSection("upcoming") ?? events;
+  const past = getSection("past") ?? events;
+  const newsletter = getSection("newsletter");
+  const cmsUpcomingEvents = list(upcoming, "items", list(upcoming, "upcoming", upcomingEvents));
+  const cmsPastEvents = list(past, "items", list(past, "past", pastEvents));
+
+  useEffect(() => {
+    fetch("/api/cms/events")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => setCmsContent(payload?.content ?? null))
+      .catch(() => setCmsContent(null));
+  }, []);
 
   // Filter events based on search and category
   const filterEvents = (events: Event[]) => {
@@ -156,8 +206,8 @@ export default function EventsPage() {
     });
   };
 
-  const filteredUpcoming = filterEvents(upcomingEvents);
-  const filteredPast = filterEvents(pastEvents);
+  const filteredUpcoming = filterEvents(cmsUpcomingEvents);
+  const filteredPast = filterEvents(cmsPastEvents);
 
   return (
     <div className="min-h-screen">
@@ -170,7 +220,7 @@ export default function EventsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-4xl md:text-5xl font-serif font-bold mb-4"
             >
-              Events & Gatherings
+              {text(hero, "heading", "Events & Gatherings")}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -178,8 +228,11 @@ export default function EventsPage() {
               transition={{ delay: 0.1 }}
               className="text-lg text-muted-foreground"
             >
-              Join us in celebrating Kashmiri culture through various events,
-              workshops, and community gatherings throughout the year.
+              {text(
+                hero,
+                "body",
+                "Join us in celebrating Kashmiri culture through various events, workshops, and community gatherings throughout the year.",
+              )}
             </motion.p>
           </div>
         </div>
@@ -248,15 +301,15 @@ export default function EventsPage() {
                         <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden group">
                           <div className="relative h-48 overflow-hidden">
                             <Image
-                              src={event.imageUrl!}
+                              src={event.imageUrl ?? PLACEHOLDER_IMAGES.culturalEvent}
                               alt={event.title}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
                             <Badge
-                              className={`absolute top-4 right-4 ${categoryColors[event.category]}`}
+                              className={`absolute top-4 right-4 ${categoryColors[event.category] ?? "bg-slate-500"}`}
                             >
-                              {categoryLabels[event.category]}
+                              {categoryLabels[event.category] ?? event.category}
                             </Badge>
                           </div>
                           <CardHeader>
@@ -325,7 +378,7 @@ export default function EventsPage() {
                         <Card className="h-full opacity-90 hover:opacity-100 transition-opacity overflow-hidden">
                           <div className="relative h-48 overflow-hidden">
                             <Image
-                              src={event.imageUrl!}
+                              src={event.imageUrl ?? PLACEHOLDER_IMAGES.culturalEvent}
                               alt={event.title}
                               fill
                               className="object-cover grayscale-[30%]"
@@ -388,14 +441,19 @@ export default function EventsPage() {
       <section className="py-16 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-serif font-bold mb-4">Never Miss an Event</h2>
+            <h2 className="text-3xl font-serif font-bold mb-4">
+              {text(newsletter, "heading", "Never Miss an Event")}
+            </h2>
             <p className="text-lg text-muted-foreground mb-8">
-              Subscribe to our newsletter to receive updates about upcoming events,
-              workshops, and community gatherings.
+              {text(
+                newsletter,
+                "body",
+                "Subscribe to our newsletter to receive updates about upcoming events, workshops, and community gatherings.",
+              )}
             </p>
             <Link href="/contact">
               <Button size="lg" className="bg-primary hover:bg-primary/90">
-                Subscribe to Newsletter
+                {text(newsletter, "cta", "Subscribe to Newsletter")}
               </Button>
             </Link>
           </div>
