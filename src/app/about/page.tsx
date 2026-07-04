@@ -5,26 +5,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MISSION_STATEMENT, PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { getCmsPage, type CmsPageContent } from "@/lib/cms";
 import { Heart, GraduationCap, Users, Target, Eye, Award, Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About Us",
   description: "Learn about KGNA's mission, history, and the dedicated team working to preserve Kashmiri culture in North America.",
-};
-
-type CmsSection = {
-  type: string;
-  props: Record<string, unknown>;
-};
-
-type CmsPageContent = {
-  title: string;
-  sections: CmsSection[];
-};
-
-type PublicCmsPage = {
-  content?: CmsPageContent;
 };
 
 type ValueItem = {
@@ -208,35 +195,9 @@ function asRecordArray(value: unknown) {
   return Array.isArray(value) ? (value as Record<string, unknown>[]) : [];
 }
 
-function cmsApiBaseUrl() {
-  const url = process.env.KGNA_ADMIN_API_URL ?? process.env.NEXT_PUBLIC_KGNA_ADMIN_API_URL ?? "";
-  return url.replace(/\/$/, "");
-}
-
 async function getAboutContent(): Promise<CmsPageContent> {
-  const baseUrl = cmsApiBaseUrl();
-  if (!baseUrl) {
-    return FALLBACK_ABOUT_CONTENT;
-  }
-
-  try {
-    const response = await fetch(`${baseUrl}/api/public/pages/about`, {
-      next: { revalidate: 60 },
-    });
-
-    if (!response.ok) {
-      return FALLBACK_ABOUT_CONTENT;
-    }
-
-    const page = (await response.json()) as PublicCmsPage;
-    if (!page.content?.sections?.length) {
-      return FALLBACK_ABOUT_CONTENT;
-    }
-
-    return page.content;
-  } catch {
-    return FALLBACK_ABOUT_CONTENT;
-  }
+  const content = await getCmsPage("about");
+  return content?.sections?.length ? content : FALLBACK_ABOUT_CONTENT;
 }
 
 function getValues(content: CmsPageContent): ValueItem[] {
