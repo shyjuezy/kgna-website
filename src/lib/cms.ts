@@ -8,15 +8,18 @@ export type CmsPageContent = {
   sections: CmsSection[];
 };
 
+const DEFAULT_ADMIN_API_URL = "https://kgna-admin.vercel.app";
+
+function cmsApiBaseUrl() {
+  return (process.env.KGNA_ADMIN_API_URL || DEFAULT_ADMIN_API_URL).replace(/\/$/, "");
+}
+
 export async function getCmsPage(slug: string): Promise<CmsPageContent | null> {
-  const baseUrl = process.env.KGNA_ADMIN_API_URL;
-  if (!baseUrl) {
-    return null;
-  }
+  const baseUrl = cmsApiBaseUrl();
 
   try {
-    const response = await fetch(`${baseUrl.replace(/\/$/, "")}/api/public/pages/${slug}`, {
-      next: { revalidate: 60 },
+    const response = await fetch(`${baseUrl}/api/public/pages/${slug}`, {
+      cache: "no-store",
     });
 
     if (!response.ok) {
