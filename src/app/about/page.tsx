@@ -6,12 +6,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MISSION_STATEMENT, PLACEHOLDER_IMAGES } from "@/lib/constants";
 import { getCmsPage, type CmsPageContent } from "@/lib/cms";
-import { Heart, GraduationCap, Users, Target, Eye, Award, Calendar, MapPin } from "lucide-react";
+import { safeImageUrl } from "@/lib/images";
+import {
+  Heart,
+  GraduationCap,
+  Users,
+  Target,
+  Eye,
+  Award,
+  Calendar,
+  MapPin,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: "Learn about KGNA's mission, history, and the dedicated team working to preserve Kashmiri culture in North America.",
+  description:
+    "Learn about KGNA's mission, history, and the dedicated team working to preserve Kashmiri culture in North America.",
 };
 
 type ValueItem = {
@@ -61,19 +72,23 @@ const FALLBACK_ABOUT_CONTENT: CmsPageContent = {
         items: [
           {
             title: "Cultural Preservation",
-            description: "Keeping Kashmiri traditions, language, and customs alive for future generations",
+            description:
+              "Keeping Kashmiri traditions, language, and customs alive for future generations",
           },
           {
             title: "Community Building",
-            description: "Creating spaces for Kashmiris to connect, celebrate, and support each other",
+            description:
+              "Creating spaces for Kashmiris to connect, celebrate, and support each other",
           },
           {
             title: "Education",
-            description: "Teaching youth about their heritage through language classes and cultural programs",
+            description:
+              "Teaching youth about their heritage through language classes and cultural programs",
           },
           {
             title: "Inclusivity",
-            description: "Welcoming all members of the Kashmiri diaspora regardless of background",
+            description:
+              "Welcoming all members of the Kashmiri diaspora regardless of background",
           },
         ],
       },
@@ -86,7 +101,8 @@ const FALLBACK_ABOUT_CONTENT: CmsPageContent = {
           {
             year: "1994",
             title: "KGNA Founded",
-            description: "A small group of Kashmiri families came together to establish KGNA",
+            description:
+              "A small group of Kashmiri families came together to establish KGNA",
           },
           {
             year: "2000",
@@ -96,17 +112,20 @@ const FALLBACK_ABOUT_CONTENT: CmsPageContent = {
           {
             year: "2005",
             title: "First Annual Conference",
-            description: "Hosted our first large-scale gathering with 500+ attendees",
+            description:
+              "Hosted our first large-scale gathering with 500+ attendees",
           },
           {
             year: "2010",
             title: "Youth Programs Launch",
-            description: "Started dedicated programs for second-generation Kashmiris",
+            description:
+              "Started dedicated programs for second-generation Kashmiris",
           },
           {
             year: "2015",
             title: "National Expansion",
-            description: "Established chapters in 15 cities across North America",
+            description:
+              "Established chapters in 15 cities across North America",
           },
           {
             year: "2020",
@@ -125,45 +144,12 @@ const FALLBACK_ABOUT_CONTENT: CmsPageContent = {
       type: "leadership",
       props: {
         heading: "Our Leadership Team",
-        body: "Dedicated volunteers working tirelessly to serve our community and preserve our heritage",
-        members: [
-          {
-            name: "Dr. Ahmad Shah",
-            role: "President",
-            bio: "Leading KGNA's mission to preserve Kashmiri heritage for over 10 years.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-          {
-            name: "Sarah Malik",
-            role: "Vice President",
-            bio: "Passionate about connecting Kashmiri youth with their cultural roots.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-          {
-            name: "Mohammad Ali",
-            role: "Secretary",
-            bio: "Dedicated to organizing cultural events and community programs.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-          {
-            name: "Fatima Khan",
-            role: "Treasurer",
-            bio: "Ensuring financial transparency and sustainability of our programs.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-          {
-            name: "Rashid Ahmed",
-            role: "Event Coordinator",
-            bio: "Creating memorable cultural experiences for our community.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-          {
-            name: "Zahra Hussain",
-            role: "Youth Program Director",
-            bio: "Engaging the next generation in Kashmiri cultural activities.",
-            imageUrl: PLACEHOLDER_IMAGES.team,
-          },
-        ],
+        body: "KGNA is run by an elected volunteer board that oversees our programs, finances, and community initiatives.",
+        structure: "",
+        // Deliberately empty: this fallback is only used when the CMS is
+        // unreachable, and it must never invent named individuals for a real
+        // nonprofit's board. An empty list renders no tiles.
+        members: [],
       },
     },
     {
@@ -181,7 +167,15 @@ const FALLBACK_ABOUT_CONTENT: CmsPageContent = {
 };
 
 const valueIcons = [Heart, Users, GraduationCap, Target];
-const milestoneIcons = [Users, Award, Calendar, GraduationCap, MapPin, Users, Heart];
+const milestoneIcons = [
+  Users,
+  Award,
+  Calendar,
+  GraduationCap,
+  MapPin,
+  Users,
+  Heart,
+];
 
 function getSection(content: CmsPageContent, type: string) {
   return content.sections.find((section) => section.type === type)?.props ?? {};
@@ -231,16 +225,18 @@ function getMilestones(content: CmsPageContent): MilestoneItem[] {
 
 function getTeamMembers(content: CmsPageContent): TeamMember[] {
   const leadership = getSection(content, "leadership");
-  const fallback = getSection(FALLBACK_ABOUT_CONTENT, "leadership");
-  const members = asRecordArray(leadership.members).length
-    ? asRecordArray(leadership.members)
-    : asRecordArray(fallback.members);
 
-  return members.map((member) => ({
+  // No fallback list on purpose. Emptying the tiles in the admin has to mean
+  // "show no tiles" - substituting placeholder people here would put invented
+  // names back on the page. Same for the photo: an unset image shows no image
+  // rather than a stock photo of strangers presented as our board.
+  return asRecordArray(leadership.members).map((member) => ({
     name: asString(member.name),
     role: asString(member.role),
     bio: asString(member.bio),
-    imageUrl: asString(member.imageUrl, PLACEHOLDER_IMAGES.team),
+    // Empty stays empty so generic tiles render without a photo; a set but
+    // unsupported host degrades to a placeholder rather than crashing.
+    imageUrl: member.imageUrl ? safeImageUrl(member.imageUrl) : "",
   }));
 }
 
@@ -315,7 +311,9 @@ export default async function AboutPage() {
                       <value.icon className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="font-semibold mb-2">{value.title}</h3>
-                    <p className="text-sm text-muted-foreground">{value.description}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {value.description}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -340,18 +338,26 @@ export default async function AboutPage() {
                     key={`${milestone.year}-${milestone.title}`}
                     className={cn(
                       "relative flex items-center",
-                      index % 2 === 0 ? "md:justify-start" : "md:justify-end"
+                      index % 2 === 0 ? "md:justify-start" : "md:justify-end",
                     )}
                   >
-                    <div className={cn(
-                      "w-full md:w-5/12",
-                      index % 2 === 0 ? "md:text-right md:pr-8" : "md:text-left md:pl-8"
-                    )}>
+                    <div
+                      className={cn(
+                        "w-full md:w-5/12",
+                        index % 2 === 0
+                          ? "md:text-right md:pr-8"
+                          : "md:text-left md:pl-8",
+                      )}
+                    >
                       <Card>
                         <CardContent className="p-6">
                           <Badge className="mb-2">{milestone.year}</Badge>
-                          <h3 className="text-xl font-semibold mb-2">{milestone.title}</h3>
-                          <p className="text-muted-foreground">{milestone.description}</p>
+                          <h3 className="text-xl font-semibold mb-2">
+                            {milestone.title}
+                          </h3>
+                          <p className="text-muted-foreground">
+                            {milestone.description}
+                          </p>
                         </CardContent>
                       </Card>
                     </div>
@@ -371,29 +377,62 @@ export default async function AboutPage() {
             <h2 className="text-3xl font-serif font-bold text-center mb-4">
               {asString(leadership.heading, "Our Leadership Team")}
             </h2>
-            <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
+            <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
               {asString(leadership.body)}
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {teamMembers.map((member) => (
-                <Card key={`${member.name}-${member.role}`} className="overflow-hidden">
-                  <div className="relative h-64">
-                    <Image
-                      src={member.imageUrl}
-                      alt={member.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <CardContent className="p-6">
-                    <h3 className="text-xl font-semibold mb-1">{member.name}</h3>
-                    <Badge variant="secondary" className="mb-3">{member.role}</Badge>
-                    <p className="text-sm text-muted-foreground">{member.bio}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            {/* Blanket statement on how the board is structured. */}
+            {asString(leadership.structure) ? (
+              <Card className="max-w-3xl mx-auto mb-12 bg-muted/30">
+                <CardContent className="p-6">
+                  <p className="text-muted-foreground leading-relaxed">
+                    {asString(leadership.structure)}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : null}
+
+            {teamMembers.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {teamMembers.map((member, index) => (
+                  <Card
+                    key={`${member.role}-${member.name}-${index}`}
+                    className="overflow-hidden"
+                  >
+                    {/* Generic tiles carry no photo; only show one if set. */}
+                    {member.imageUrl ? (
+                      <div className="relative h-64">
+                        <Image
+                          src={member.imageUrl}
+                          alt={member.name || member.role}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : null}
+                    <CardContent className="p-6">
+                      {member.name ? (
+                        <>
+                          <h3 className="text-xl font-semibold mb-1">
+                            {member.name}
+                          </h3>
+                          <Badge variant="secondary" className="mb-3">
+                            {member.role}
+                          </Badge>
+                        </>
+                      ) : (
+                        <h3 className="text-lg font-semibold uppercase tracking-wide mb-3">
+                          {member.role}
+                        </h3>
+                      )}
+                      <p className="text-sm text-muted-foreground">
+                        {member.bio}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </section>

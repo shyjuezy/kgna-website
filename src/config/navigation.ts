@@ -29,7 +29,7 @@ export const mainNav: NavItem[] = [
   {
     title: "Contact",
     href: "/contact",
-  }
+  },
 ];
 
 export const footerNav = {
@@ -37,17 +37,18 @@ export const footerNav = {
     { title: "About Us", href: "/about" },
     { title: "Upcoming Events", href: "/events" },
     { title: "Gallery", href: "/gallery" },
-    { title: "Contact", href: "/contact" }
+    { title: "Contact", href: "/contact" },
   ],
   resources: [
     { title: "Culture & Heritage", href: "/culture" },
     { title: "News & Updates", href: "/news" },
-    { title: "Past Events", href: "/events/past" },
-    { title: "Donate", href: "/donate" }
+    { title: "Past Events", href: "/events?tab=past" },
+    { title: "Donate", href: "/donate" },
+    { title: "Become a Patron", href: "/patron" },
   ],
   legal: [
     { title: "Privacy Policy", href: "/privacy" },
     { title: "Terms of Service", href: "/terms" },
-    { title: "501(c)(3) Status", href: "/nonprofit-status" }
-  ]
+    { title: "501(c)(3) Status", href: "/nonprofit-status" },
+  ],
 };

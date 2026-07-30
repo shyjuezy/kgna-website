@@ -3,14 +3,36 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
-import { Calendar, MapPin, Clock, Users, Search, Filter, ChevronRight, Ticket } from "lucide-react";
+import { safeImageUrl } from "@/lib/images";
+import {
+  Calendar,
+  MapPin,
+  Clock,
+  Users,
+  Search,
+  Filter,
+  ChevronRight,
+  Ticket,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import type { Event } from "@/types";
 import type { CmsPageContent } from "@/lib/cms";
@@ -25,93 +47,101 @@ const upcomingEvents: Event[] = [
   {
     id: "1",
     title: "Annual Cultural Festival 2025",
-    description: "Join us for our biggest celebration of the year featuring traditional music, dance performances, authentic Kashmiri cuisine, and activities for all ages.",
+    description:
+      "Join us for our biggest celebration of the year featuring traditional music, dance performances, authentic Kashmiri cuisine, and activities for all ages.",
     date: new Date("2025-06-15"),
     time: "5:00 PM - 10:00 PM",
     location: "Queens Community Center, New York",
     category: "cultural",
     imageUrl: PLACEHOLDER_IMAGES.culturalEvent,
-    registrationUrl: "#"
+    registrationUrl: "#",
   },
   {
     id: "2",
     title: "Kashmiri Language Workshop",
-    description: "Learn the basics of Kashmiri language in this interactive workshop. Perfect for children and adults who want to connect with their linguistic heritage.",
+    description:
+      "Learn the basics of Kashmiri language in this interactive workshop. Perfect for children and adults who want to connect with their linguistic heritage.",
     date: new Date("2025-02-20"),
     time: "2:00 PM - 4:00 PM",
     location: "Virtual Event (Zoom)",
     category: "educational",
     imageUrl: PLACEHOLDER_IMAGES.tradition,
-    registrationUrl: "#"
+    registrationUrl: "#",
   },
   {
     id: "3",
     title: "Spring Navroz Celebration",
-    description: "Welcome spring with traditional Kashmiri Navroz festivities including special prayers, cultural programs, and community feast.",
+    description:
+      "Welcome spring with traditional Kashmiri Navroz festivities including special prayers, cultural programs, and community feast.",
     date: new Date("2025-03-21"),
     time: "11:00 AM - 3:00 PM",
     location: "KGNA Community Hall, Boston",
     category: "cultural",
     imageUrl: PLACEHOLDER_IMAGES.kashmir1,
-    registrationUrl: "#"
+    registrationUrl: "#",
   },
   {
     id: "4",
     title: "Youth Leadership Summit",
-    description: "A day-long summit for young Kashmiris to develop leadership skills, network with professionals, and engage in community service planning.",
+    description:
+      "A day-long summit for young Kashmiris to develop leadership skills, network with professionals, and engage in community service planning.",
     date: new Date("2025-04-10"),
     time: "9:00 AM - 5:00 PM",
     location: "Marriott Hotel, Chicago",
     category: "educational",
     imageUrl: PLACEHOLDER_IMAGES.team,
-    registrationUrl: "#"
+    registrationUrl: "#",
   },
   {
     id: "5",
     title: "Community Iftar Gathering",
-    description: "Break your fast with the community during the holy month of Ramadan. Open to all members and friends of the Kashmiri community.",
+    description:
+      "Break your fast with the community during the holy month of Ramadan. Open to all members and friends of the Kashmiri community.",
     date: new Date("2025-04-05"),
     time: "7:00 PM - 9:00 PM",
     location: "Islamic Center, Houston",
     category: "social",
     imageUrl: PLACEHOLDER_IMAGES.community,
-    registrationUrl: "#"
+    registrationUrl: "#",
   },
   {
     id: "6",
     title: "Annual Fundraising Gala",
-    description: "An elegant evening supporting KGNA's educational and cultural programs. Features dinner, entertainment, and silent auction.",
+    description:
+      "An elegant evening supporting KGNA's educational and cultural programs. Features dinner, entertainment, and silent auction.",
     date: new Date("2025-09-20"),
     time: "6:00 PM - 11:00 PM",
     location: "Grand Ballroom, San Francisco",
     category: "fundraiser",
     imageUrl: PLACEHOLDER_IMAGES.culturalEvent,
-    registrationUrl: "#"
-  }
+    registrationUrl: "#",
+  },
 ];
 
 const pastEvents: Event[] = [
   {
     id: "p1",
     title: "KGNA Convention 2024",
-    description: "Three-day convention featuring cultural programs, business sessions, and youth activities.",
+    description:
+      "Three-day convention featuring cultural programs, business sessions, and youth activities.",
     date: new Date("2024-07-15"),
     time: "All Day",
     location: "Washington DC",
     category: "cultural",
     imageUrl: PLACEHOLDER_IMAGES.kashmir2,
-    isPastEvent: true
+    isPastEvent: true,
   },
   {
     id: "p2",
     title: "Winter Food Festival",
-    description: "Celebration of traditional Kashmiri winter cuisine with cooking demonstrations.",
+    description:
+      "Celebration of traditional Kashmiri winter cuisine with cooking demonstrations.",
     date: new Date("2024-12-10"),
     time: "12:00 PM - 6:00 PM",
     location: "Community Center, Seattle",
     category: "social",
     imageUrl: PLACEHOLDER_IMAGES.food,
-    isPastEvent: true
+    isPastEvent: true,
   },
   {
     id: "p3",
@@ -122,22 +152,22 @@ const pastEvents: Event[] = [
     location: "Various Locations",
     category: "educational",
     imageUrl: PLACEHOLDER_IMAGES.tradition,
-    isPastEvent: true
-  }
+    isPastEvent: true,
+  },
 ];
 
 const categoryColors = {
   cultural: "bg-purple-500",
   educational: "bg-blue-500",
   social: "bg-green-500",
-  fundraiser: "bg-orange-500"
+  fundraiser: "bg-orange-500",
 };
 
 const categoryLabels = {
   cultural: "Cultural",
   educational: "Educational",
   social: "Social",
-  fundraiser: "Fundraiser"
+  fundraiser: "Fundraiser",
 };
 
 export default function EventsPage() {
@@ -146,12 +176,21 @@ export default function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [activeTab, setActiveTab] = useState("upcoming");
 
-  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
-  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+  const getSection = (type: string) =>
+    cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (
+    props: Record<string, unknown> | undefined,
+    key: string,
+    fallback: string,
+  ) => {
     const value = props?.[key];
     return typeof value === "string" && value.trim() ? value : fallback;
   };
-  const list = (props: Record<string, unknown> | undefined, key: string, fallback: Event[]) => {
+  const list = (
+    props: Record<string, unknown> | undefined,
+    key: string,
+    fallback: Event[],
+  ) => {
     const value = props?.[key];
     if (!Array.isArray(value)) {
       return fallback;
@@ -159,23 +198,29 @@ export default function EventsPage() {
 
     return value.map((item, index) => {
       const record = item as Record<string, unknown>;
-      const category = typeof record.category === "string" ? record.category : "cultural";
+      const category =
+        typeof record.category === "string" ? record.category : "cultural";
 
       return {
         id: typeof record.id === "string" ? record.id : String(index + 1),
-        title: typeof record.title === "string" ? record.title : "Community Event",
-        description: typeof record.description === "string" ? record.description : "",
-        date: new Date(typeof record.date === "string" ? record.date : Date.now()),
+        title:
+          typeof record.title === "string" ? record.title : "Community Event",
+        description:
+          typeof record.description === "string" ? record.description : "",
+        date: new Date(
+          typeof record.date === "string" ? record.date : Date.now(),
+        ),
         time: typeof record.time === "string" ? record.time : "",
         location: typeof record.location === "string" ? record.location : "",
         category: category as Event["category"],
-        imageUrl:
-          typeof record.image === "string"
-            ? record.image
-            : typeof record.imageUrl === "string"
-              ? record.imageUrl
-              : PLACEHOLDER_IMAGES.culturalEvent,
-        registrationUrl: typeof record.registrationUrl === "string" ? record.registrationUrl : "#",
+        imageUrl: safeImageUrl(
+          record.image ?? record.imageUrl,
+          PLACEHOLDER_IMAGES.culturalEvent,
+        ),
+        registrationUrl:
+          typeof record.registrationUrl === "string"
+            ? record.registrationUrl
+            : "#",
         isPastEvent: record.isPastEvent === "yes",
       };
     });
@@ -185,7 +230,11 @@ export default function EventsPage() {
   const upcoming = getSection("upcoming") ?? events;
   const past = getSection("past") ?? events;
   const newsletter = getSection("newsletter");
-  const cmsUpcomingEvents = list(upcoming, "items", list(upcoming, "upcoming", upcomingEvents));
+  const cmsUpcomingEvents = list(
+    upcoming,
+    "items",
+    list(upcoming, "upcoming", upcomingEvents),
+  );
   const cmsPastEvents = list(past, "items", list(past, "past", pastEvents));
 
   useEffect(() => {
@@ -195,13 +244,27 @@ export default function EventsPage() {
       .catch(() => setCmsContent(null));
   }, []);
 
+  // Allow deep links such as /events?tab=past (used by the footer) to open the
+  // matching tab. Read from location rather than useSearchParams so this
+  // statically prerendered route does not need a Suspense boundary.
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    if (tab === "past" || tab === "upcoming") {
+      // Mount-only URL adoption: empty deps, fixed value, so no cascade.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveTab(tab);
+    }
+  }, []);
+
   // Filter events based on search and category
   const filterEvents = (events: Event[]) => {
-    return events.filter(event => {
-      const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           event.location.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
+    return events.filter((event) => {
+      const matchesSearch =
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.location.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" || event.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   };
@@ -255,7 +318,10 @@ export default function EventsPage() {
               </div>
 
               {/* Category Filter */}
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
                 <SelectTrigger className="w-full md:w-[200px]">
                   <Filter className="h-4 w-4 mr-2" />
                   <SelectValue placeholder="All Categories" />
@@ -301,7 +367,10 @@ export default function EventsPage() {
                         <Card className="h-full hover:shadow-lg transition-shadow overflow-hidden group">
                           <div className="relative h-48 overflow-hidden">
                             <Image
-                              src={event.imageUrl ?? PLACEHOLDER_IMAGES.culturalEvent}
+                              src={
+                                event.imageUrl ??
+                                PLACEHOLDER_IMAGES.culturalEvent
+                              }
                               alt={event.title}
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -313,15 +382,19 @@ export default function EventsPage() {
                             </Badge>
                           </div>
                           <CardHeader>
-                            <CardTitle className="line-clamp-2">{event.title}</CardTitle>
+                            <CardTitle className="line-clamp-2">
+                              {event.title}
+                            </CardTitle>
                             <CardDescription className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                <span>{event.date.toLocaleDateString('en-US', {
-                                  month: 'long',
-                                  day: 'numeric',
-                                  year: 'numeric'
-                                })}</span>
+                                <span>
+                                  {event.date.toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
@@ -329,7 +402,9 @@ export default function EventsPage() {
                               </div>
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4" />
-                                <span className="line-clamp-1">{event.location}</span>
+                                <span className="line-clamp-1">
+                                  {event.location}
+                                </span>
                               </div>
                             </CardDescription>
                           </CardHeader>
@@ -338,7 +413,10 @@ export default function EventsPage() {
                               {event.description}
                             </p>
                             <div className="flex gap-2">
-                              <Link href={`/events/${event.id}`} className="flex-1">
+                              <Link
+                                href={`/events/${event.id}`}
+                                className="flex-1"
+                              >
                                 <Button variant="outline" className="w-full">
                                   Learn More
                                   <ChevronRight className="ml-2 h-4 w-4" />
@@ -356,7 +434,9 @@ export default function EventsPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No events found</h3>
+                    <h3 className="text-xl font-semibold mb-2">
+                      No events found
+                    </h3>
                     <p className="text-muted-foreground">
                       Try adjusting your search or filter criteria
                     </p>
@@ -378,7 +458,10 @@ export default function EventsPage() {
                         <Card className="h-full opacity-90 hover:opacity-100 transition-opacity overflow-hidden">
                           <div className="relative h-48 overflow-hidden">
                             <Image
-                              src={event.imageUrl ?? PLACEHOLDER_IMAGES.culturalEvent}
+                              src={
+                                event.imageUrl ??
+                                PLACEHOLDER_IMAGES.culturalEvent
+                              }
                               alt={event.title}
                               fill
                               className="object-cover grayscale-[30%]"
@@ -391,19 +474,25 @@ export default function EventsPage() {
                             </Badge>
                           </div>
                           <CardHeader>
-                            <CardTitle className="line-clamp-2">{event.title}</CardTitle>
+                            <CardTitle className="line-clamp-2">
+                              {event.title}
+                            </CardTitle>
                             <CardDescription className="space-y-2">
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4" />
-                                <span>{event.date.toLocaleDateString('en-US', {
-                                  month: 'long',
-                                  day: 'numeric',
-                                  year: 'numeric'
-                                })}</span>
+                                <span>
+                                  {event.date.toLocaleDateString("en-US", {
+                                    month: "long",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
                               </div>
                               <div className="flex items-center gap-2">
                                 <MapPin className="h-4 w-4" />
-                                <span className="line-clamp-1">{event.location}</span>
+                                <span className="line-clamp-1">
+                                  {event.location}
+                                </span>
                               </div>
                             </CardDescription>
                           </CardHeader>
@@ -425,7 +514,9 @@ export default function EventsPage() {
                 ) : (
                   <div className="text-center py-12">
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">No past events found</h3>
+                    <h3 className="text-xl font-semibold mb-2">
+                      No past events found
+                    </h3>
                     <p className="text-muted-foreground">
                       Check back later for event recaps and photos
                     </p>

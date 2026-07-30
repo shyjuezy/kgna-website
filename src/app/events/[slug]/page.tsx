@@ -5,101 +5,129 @@ import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { ORGANIZATION_INFO, PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
+import { getCmsPage, getSection, listProp } from "@/lib/cms";
 import {
   Calendar,
   MapPin,
   Clock,
-  Users,
   ArrowLeft,
-  Share2,
-  Heart,
-  Ticket,
   Mail,
-  Phone,
-  Globe
+  Info,
+  Lock,
 } from "lucide-react";
 
-// This would normally fetch from your database
-async function getEvent(slug: string) {
-  // Mock data - replace with actual API call
-  const events = {
-    "1": {
-      id: "1",
-      title: "Annual Cultural Festival 2025",
-      description: "Join us for our biggest celebration of the year featuring traditional music, dance performances, authentic Kashmiri cuisine, and activities for all ages. This festival brings together the Kashmiri diaspora from across North America for a day of cultural immersion and community bonding.",
-      longDescription: `
-        The Annual Cultural Festival is KGNA's flagship event, celebrating the rich tapestry of Kashmiri heritage. This year's festival promises to be our most spectacular yet, featuring:
+type EventDetail = {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  city: string;
+  category: string;
+  imageUrl: string;
+};
 
-        **Cultural Performances**
-        - Traditional Rouf and Hafiza dance performances
-        - Sufi music concert by renowned artists
-        - Children's cultural program
-        - Fashion show featuring traditional Kashmiri attire
+function str(value: unknown, fallback = "") {
+  return typeof value === "string" && value.trim() ? value.trim() : fallback;
+}
 
-        **Food & Cuisine**
-        - Authentic Wazwan preparation demonstration
-        - Food stalls with traditional Kashmiri delicacies
-        - Kahwa tea station
-        - Kids-friendly food options
+/**
+ * Events are authored as display strings like "Queens Community Center, New
+ * York". Only the city is shown publicly, so take the last comma-separated
+ * segment. Values with no comma ("Virtual Event") pass through unchanged.
+ */
+function cityOf(location: string) {
+  const segments = location
+    .split(",")
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return segments.length ? segments[segments.length - 1] : "";
+}
 
-        **Activities & Workshops**
-        - Kashmiri language workshop for beginners
-        - Traditional craft demonstrations (Paper Mache, Embroidery)
-        - Children's activities corner with face painting and games
-        - Photo booth with traditional props
-
-        **Community & Networking**
-        - Business networking session
-        - Youth meet and greet
-        - Senior citizens' corner
-        - Community awards ceremony
-      `,
-      date: new Date("2025-06-15"),
-      time: "5:00 PM - 10:00 PM",
-      location: "Queens Community Center, New York",
-      address: "123 Main Street, Queens, NY 11101",
-      category: "cultural",
-      imageUrl: PLACEHOLDER_IMAGES.culturalEvent,
-      galleryImages: [
-        PLACEHOLDER_IMAGES.kashmir1,
-        PLACEHOLDER_IMAGES.tradition,
-        PLACEHOLDER_IMAGES.community,
-        PLACEHOLDER_IMAGES.food
-      ],
-      registrationUrl: "#",
-      capacity: 500,
-      registered: 342,
-      price: {
-        adults: 25,
-        children: 10,
-        family: 60
-      },
-      organizer: {
-        name: "KGNA Events Team",
-        email: "events@kgna.us",
-        phone: "(555) 123-4567"
-      },
-      sponsors: ["Local Business 1", "Community Partner 2", "Media Partner 3"]
-    }
+function toEventDetail(item: Record<string, unknown>): EventDetail {
+  const location = str(item.location);
+  return {
+    id: str(item.id),
+    title: str(item.title, "Community Event"),
+    description: str(item.description),
+    date: str(item.date),
+    time: str(item.time),
+    city: cityOf(location),
+    category: str(item.category, "cultural"),
+    imageUrl:
+      safeImageUrl(
+        str(item.image) || str(item.imageUrl),
+        PLACEHOLDER_IMAGES.culturalEvent,
+      ),
   };
+}
 
-  return events[slug as keyof typeof events] || null;
+/**
+ * Looks the event up in the CMS rather than a hardcoded map, so every event
+ * that appears in a listing has a detail page.
+ *
+ * Events are currently authored in two separate CMS lists - the events page
+ * (upcoming + past) and the home page's events section - and their ids overlap.
+ * The events page wins because it is the fuller list; the home page is only
+ * consulted for ids that exist nowhere else. Collapsing these into one list
+ * would remove the need for this precedence.
+ */
+async function getEvent(slug: string): Promise<EventDetail | null> {
+  const lists: Array<Array<Record<string, unknown>>> = [];
+
+  const eventsPage = await getCmsPage("events");
+  if (eventsPage) {
+    const events = getSection(eventsPage, "events");
+    const upcoming = getSection(eventsPage, "upcoming") ?? events;
+    const past = getSection(eventsPage, "past") ?? events;
+    lists.push(
+      listProp(upcoming, "items", listProp(upcoming, "upcoming", [])),
+      listProp(past, "items", listProp(past, "past", [])),
+    );
+  }
+
+  const homePage = await getCmsPage("home");
+  if (homePage) {
+    lists.push(listProp(getSection(homePage, "events"), "items", []));
+  }
+
+  for (const list of lists) {
+    const match = list.find((item) => str(item.id) === slug);
+    if (match) {
+      return toEventDetail(match);
+    }
+  }
+
+  return null;
+}
+
+function formatDate(value: string) {
+  if (!value) return "";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  // Format in UTC: the stored values are plain dates, and local formatting
+  // would shift them a day for anyone west of Greenwich.
+  return parsed.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export async function generateMetadata({
-  params
+  params,
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
   const event = await getEvent(slug);
 
   if (!event) {
-    return {
-      title: "Event Not Found",
-    };
+    return { title: "Event Not Found" };
   }
 
   return {
@@ -109,9 +137,9 @@ export async function generateMetadata({
 }
 
 export default async function EventDetailPage({
-  params
+  params,
 }: {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
   const event = await getEvent(slug);
@@ -120,7 +148,10 @@ export default async function EventDetailPage({
     notFound();
   }
 
-  const registrationPercentage = (event.registered / event.capacity) * 100;
+  const inviteSubject = encodeURIComponent(
+    `Invitation request: ${event.title}`,
+  );
+  const inviteHref = `mailto:${ORGANIZATION_INFO.email}?subject=${inviteSubject}`;
 
   return (
     <div className="min-h-screen">
@@ -137,7 +168,10 @@ export default async function EventDetailPage({
         {/* Back Button */}
         <div className="absolute top-4 left-4 z-10">
           <Link href="/events">
-            <Button variant="outline" className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20">
+            <Button
+              variant="outline"
+              className="bg-white/10 backdrop-blur border-white/20 text-white hover:bg-white/20 hover:text-white"
+            >
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Events
             </Button>
@@ -161,189 +195,123 @@ export default async function EventDetailPage({
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Content - Event Details */}
             <div className="lg:col-span-2 space-y-8">
-              {/* Quick Info */}
+              {/* Quick Info - the single place date, time and city appear */}
               <Card>
                 <CardContent className="p-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="flex items-center gap-3">
-                      <Calendar className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Date</p>
-                        <p className="font-medium">
-                          {event.date.toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            month: 'long',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </p>
+                    {event.date ? (
+                      <div className="flex items-center gap-3">
+                        <Calendar className="h-5 w-5 text-primary shrink-0" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Date</p>
+                          <p className="font-medium">
+                            {formatDate(event.date)}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Time</p>
-                        <p className="font-medium">{event.time}</p>
+                    ) : null}
+                    {event.time ? (
+                      <div className="flex items-center gap-3">
+                        <Clock className="h-5 w-5 text-primary shrink-0" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">Time</p>
+                          <p className="font-medium">{event.time}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 text-primary" />
-                      <div>
-                        <p className="text-sm text-muted-foreground">Location</p>
-                        <p className="font-medium">{event.location}</p>
+                    ) : null}
+                    {event.city ? (
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-5 w-5 text-primary shrink-0" />
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Location
+                          </p>
+                          <p className="font-medium">{event.city}</p>
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
                   </div>
                 </CardContent>
               </Card>
 
               {/* Description */}
-              <div>
-                <h2 className="text-2xl font-serif font-bold mb-4">About This Event</h2>
-                <div className="prose prose-lg max-w-none text-muted-foreground">
-                  <p className="mb-4">{event.description}</p>
-                  <div className="space-y-4 whitespace-pre-line">
-                    {event.longDescription}
-                  </div>
-                </div>
-              </div>
-
-              {/* Gallery */}
-              {event.galleryImages && event.galleryImages.length > 0 && (
+              {event.description ? (
                 <div>
-                  <h2 className="text-2xl font-serif font-bold mb-4">Event Gallery</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {event.galleryImages.map((image, index) => (
-                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                        <Image
-                          src={image}
-                          alt={`Gallery image ${index + 1}`}
-                          fill
-                          className="object-cover hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                  <h2 className="text-2xl font-serif font-bold mb-4">
+                    About This Event
+                  </h2>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    {event.description}
+                  </p>
                 </div>
-              )}
+              ) : null}
 
-              {/* Sponsors */}
-              {event.sponsors && event.sponsors.length > 0 && (
-                <div>
-                  <h2 className="text-2xl font-serif font-bold mb-4">Event Sponsors</h2>
-                  <div className="flex flex-wrap gap-4">
-                    {event.sponsors.map((sponsor) => (
-                      <Badge key={sponsor} variant="secondary" className="px-4 py-2">
-                        {sponsor}
-                      </Badge>
-                    ))}
+              {/* Disclaimers */}
+              <Card className="bg-muted/30">
+                <CardContent className="p-6 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Info className="h-5 w-5 text-primary shrink-0" />
+                    <h2 className="text-lg font-semibold">
+                      Before you request an invitation
+                    </h2>
                   </div>
-                </div>
-              )}
+                  <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                    <li>
+                      This is a ticketed private event. Attendance is by
+                      invitation only, and invitations are not transferable.
+                    </li>
+                    <li>
+                      Registration and ticketing are handled off-site by our
+                      ticketing partner once an invitation has been issued.
+                      There is no public registration for this event.
+                    </li>
+                    <li>
+                      KGNA reserves the right to cancel and refund your
+                      registration if the event is cancelled or rescheduled, if
+                      venue capacity or safety requirements change, or if the
+                      registration was not made by the invited guest.
+                    </li>
+                    <li>
+                      Requesting an invitation does not guarantee admission.
+                      Capacity is limited and requests are reviewed by the
+                      organizers.
+                    </li>
+                    <li>
+                      We photograph and record our events and may use those
+                      images in our gallery and promotional material. See our{" "}
+                      <Link href="/terms" className="text-primary underline">
+                        Terms of Service
+                      </Link>{" "}
+                      for details.
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Right Sidebar - Registration */}
+            {/* Right Sidebar */}
             <div className="space-y-6">
-              {/* Registration Card */}
-              <Card>
+              {/* Invitation request - replaces public registration */}
+              <Card className="border-primary/30">
                 <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Event Registration</h3>
-
-                  {/* Capacity Bar */}
-                  <div className="mb-6">
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-muted-foreground">Spots Filled</span>
-                      <span className="font-medium">{event.registered} / {event.capacity}</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div
-                        className="bg-primary rounded-full h-2 transition-all duration-300"
-                        style={{ width: `${registrationPercentage}%` }}
-                      />
-                    </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Lock className="h-5 w-5 text-primary shrink-0" />
+                    <h3 className="text-xl font-semibold">Invite only</h3>
                   </div>
-
-                  {/* Pricing */}
-                  <div className="space-y-3 mb-6">
-                    <h4 className="font-medium">Ticket Prices</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Adults</span>
-                        <span className="font-medium">${event.price.adults}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Children (12 & under)</span>
-                        <span className="font-medium">${event.price.children}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Family (2 adults + children)</span>
-                        <span className="font-medium">${event.price.family}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button className="w-full bg-primary hover:bg-primary/90" size="lg">
-                    <Ticket className="mr-2 h-5 w-5" />
-                    Register Now
-                  </Button>
-
-                  <p className="text-xs text-muted-foreground text-center mt-4">
-                    Registration closes 24 hours before the event
+                  <p className="text-sm text-muted-foreground mb-6">
+                    This event is not open for public registration. If you would
+                    like to attend, email the organizers to request an
+                    invitation.
                   </p>
-                </CardContent>
-              </Card>
-
-              {/* Venue Card */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Venue Details</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="font-medium">{event.location}</p>
-                      <p className="text-sm text-muted-foreground">{event.address}</p>
-                    </div>
-                    <Button variant="outline" className="w-full">
-                      <MapPin className="mr-2 h-4 w-4" />
-                      Get Directions
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Contact Card */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Contact Organizer</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${event.organizer.email}`} className="text-sm hover:underline">
-                        {event.organizer.email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{event.organizer.phone}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Share Card */}
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-4">Share This Event</h3>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Mail className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1">
-                      <Heart className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button asChild className="w-full" size="lg">
+                    <a href={inviteHref}>
+                      <Mail className="mr-2 h-5 w-5" />
+                      Email organizer to request an invitation
+                    </a>
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center mt-4">
+                    {ORGANIZATION_INFO.email}
+                  </p>
                 </CardContent>
               </Card>
             </div>

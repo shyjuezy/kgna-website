@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getCmsPage, getSection, listProp, optionalTextProp, textProp } from "@/lib/cms";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
 import {
   Palette,
   Music,
@@ -199,7 +200,11 @@ export default async function CulturePage() {
                 <Card key={art.name} className="overflow-hidden">
                   <div className="relative h-48">
                     <Image
-                      src={optionalTextProp(art, "image") ?? optionalTextProp(art, "imageUrl") ?? PLACEHOLDER_IMAGES.tradition}
+                      src={safeImageUrl(
+                        optionalTextProp(art, "image") ??
+                          optionalTextProp(art, "imageUrl"),
+                        PLACEHOLDER_IMAGES.tradition,
+                      )}
                       alt={art.name}
                       fill
                       className="object-cover"

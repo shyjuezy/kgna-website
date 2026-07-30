@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
-import { DONATION_PRODUCTS } from '@/config/donation-tiers';
+import { NextRequest, NextResponse } from "next/server";
+import { stripe } from "@/lib/stripe";
+import { DONATION_PRODUCTS } from "@/config/donation-tiers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { frequency, amount, coverFees, donorInfo } = body;
 
     // For subscriptions, we need to use pre-created price IDs or create them dynamically
-    const config = DONATION_PRODUCTS[frequency as 'monthly' | 'annual'];
+    const config = DONATION_PRODUCTS[frequency as "monthly" | "annual"];
     let priceId: string | undefined;
 
     // Check if we have a pre-configured price for this amount
@@ -16,21 +16,28 @@ export async function POST(request: NextRequest) {
       priceId = config.prices[amount as keyof typeof config.prices];
     }
 
-    // If no pre-configured price or custom amount, create a new price
-    if (!priceId || priceId.startsWith('price_')) {
+    // Only fall back to creating a price when there is no usable configured one.
+    // The previous check was `priceId.startsWith('price_')`, which is true of
+    // every real Stripe price id - so configured ids were always discarded and
+    // a new Product + Price was created on every recurring donation.
+    const isPlaceholderPriceId = (value: string) =>
+      /^price_(monthly|annual)_\d+$/.test(value);
+
+    if (!priceId || isPlaceholderPriceId(priceId)) {
       const product = await stripe.products.create({
-        name: `${frequency === 'monthly' ? 'Monthly' : 'Annual'} Donation to KGNA`,
-        description: donorInfo.isHonorarium && donorInfo.honorariumName
-          ? `In ${donorInfo.honorariumName}`
-          : 'Recurring support for our mission',
+        name: `${frequency === "monthly" ? "Monthly" : "Annual"} Donation to KGNA`,
+        description:
+          donorInfo.isHonorarium && donorInfo.honorariumName
+            ? `In ${donorInfo.honorariumName}`
+            : "Recurring support for our mission",
       });
 
       const price = await stripe.prices.create({
         product: product.id,
         unit_amount: Math.round(amount * 100),
-        currency: 'usd',
+        currency: "usd",
         recurring: {
-          interval: frequency === 'monthly' ? 'month' : 'year',
+          interval: frequency === "monthly" ? "month" : "year",
         },
       });
 
@@ -39,8 +46,8 @@ export async function POST(request: NextRequest) {
 
     // Create checkout session for subscription
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
+      payment_method_types: ["card"],
+      mode: "subscription",
       customer_email: donorInfo.email,
       line_items: [
         {
@@ -52,11 +59,13 @@ export async function POST(request: NextRequest) {
         donationType: frequency,
         firstName: donorInfo.firstName,
         lastName: donorInfo.lastName,
-        phone: donorInfo.phone || '',
-        isHonorarium: donorInfo.isHonorarium ? 'true' : 'false',
-        honorariumName: donorInfo.honorariumName || '',
-        subscribeToNewsletter: donorInfo.subscribeToNewsletter ? 'true' : 'false',
-        coverFees: coverFees ? 'true' : 'false',
+        phone: donorInfo.phone || "",
+        isHonorarium: donorInfo.isHonorarium ? "true" : "false",
+        honorariumName: donorInfo.honorariumName || "",
+        subscribeToNewsletter: donorInfo.subscribeToNewsletter
+          ? "true"
+          : "false",
+        coverFees: coverFees ? "true" : "false",
         customAmount: amount.toString(),
       },
       subscription_data: {
@@ -72,10 +81,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
-    console.error('Error creating subscription session:', error);
+    console.error("Error creating subscription session:", error);
     return NextResponse.json(
-      { error: 'Failed to create subscription session' },
-      { status: 500 }
+      { error: "Failed to create subscription session" },
+      { status: 500 },
     );
   }
 }

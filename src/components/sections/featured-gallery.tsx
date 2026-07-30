@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
 import { motion } from "framer-motion";
 
 const galleryImages = [
@@ -71,7 +72,7 @@ export function FeaturedGallery({
   const images = items?.length
     ? items.map((item, index) => ({
         id: typeof item.id === "string" ? item.id : String(index + 1),
-        url: typeof item.image === "string" ? item.image : PLACEHOLDER_IMAGES.kashmir1,
+        url: safeImageUrl(item.image, PLACEHOLDER_IMAGES.kashmir1),
         title: typeof item.title === "string" ? item.title : "Gallery image",
         category: typeof item.category === "string" ? item.category : "gallery",
       }))

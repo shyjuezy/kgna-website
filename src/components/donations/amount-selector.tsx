@@ -4,19 +4,22 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DONATION_PRODUCTS } from "@/config/donation-tiers";
+import type { DonationProduct } from "@/config/donation-tiers";
 import { cn } from "@/lib/utils";
 
 interface AmountSelectorProps {
   frequency: 'one-time' | 'monthly' | 'annual';
   selectedAmount: number;
   onAmountChange: (amount: number) => void;
+  /** Resolved config (CMS overrides applied). Falls back to the built-ins. */
+  config?: DonationProduct;
 }
 
-export function AmountSelector({ frequency, selectedAmount, onAmountChange }: AmountSelectorProps) {
+export function AmountSelector({ frequency, selectedAmount, onAmountChange, config: configProp }: AmountSelectorProps) {
   const [isCustom, setIsCustom] = useState(false);
   const [customAmount, setCustomAmount] = useState("");
 
-  const config = DONATION_PRODUCTS[frequency];
+  const config = configProp ?? DONATION_PRODUCTS[frequency];
   const amounts = config.amounts;
   const tiers = config.tiers;
 
