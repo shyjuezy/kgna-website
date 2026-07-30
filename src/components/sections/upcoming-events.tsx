@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import type { Event } from "@/types";
@@ -71,7 +72,7 @@ function eventFromCms(item: Record<string, unknown>, index: number): Event {
     time: typeof item.time === "string" ? item.time : "",
     location: typeof item.location === "string" ? item.location : "",
     category: category as Event["category"],
-    imageUrl: typeof item.image === "string" ? item.image : PLACEHOLDER_IMAGES.culturalEvent,
+    imageUrl: safeImageUrl(item.image, PLACEHOLDER_IMAGES.culturalEvent),
     registrationUrl: typeof item.registrationUrl === "string" ? item.registrationUrl : "#",
   };
 }

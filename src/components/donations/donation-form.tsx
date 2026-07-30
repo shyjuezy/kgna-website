@@ -3,35 +3,54 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { FrequencyToggle } from "./frequency-toggle";
 import { AmountSelector } from "./amount-selector";
 import { DonorInfoForm } from "./donor-info-form";
-import { DONATION_PRODUCTS } from "@/config/donation-tiers";
+import { resolveDonationProducts } from "@/config/donation-tiers";
+import type { CmsDonationTier } from "@/config/donation-tiers";
 import { Heart, Shield, Loader2 } from "lucide-react";
 import type { DonationFormData, DonorInfo } from "@/types";
 
 interface DonationFormProps {
-  defaultFrequency?: 'one-time' | 'monthly' | 'annual';
+  defaultFrequency?: "one-time" | "monthly" | "annual";
   defaultAmount?: number;
+  /** Amount + impact rows authored in the admin. */
+  tiers?: CmsDonationTier[];
 }
 
-export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: DonationFormProps) {
+// Annual is the default: it is the frequency we promote as "Most Impact".
+export function DonationForm({
+  defaultFrequency = "annual",
+  defaultAmount,
+  tiers,
+}: DonationFormProps) {
+  const products = resolveDonationProducts(tiers);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [frequency, setFrequency] = useState<'one-time' | 'monthly' | 'annual'>(defaultFrequency);
-  const [amount, setAmount] = useState(defaultAmount || DONATION_PRODUCTS[frequency].default);
+  const [frequency, setFrequency] = useState<"one-time" | "monthly" | "annual">(
+    defaultFrequency,
+  );
+  const [amount, setAmount] = useState(
+    defaultAmount || products[defaultFrequency].default,
+  );
   const [coverFees, setCoverFees] = useState(false);
   const [donorInfo, setDonorInfo] = useState<DonorInfo>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
     isHonorarium: false,
-    honorariumName: '',
-    subscribeToNewsletter: true
+    honorariumName: "",
+    subscribeToNewsletter: true,
   });
 
   const processingFeePercent = 0.03;
@@ -43,26 +62,27 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
 
     // Validate required fields
     if (!donorInfo.firstName || !donorInfo.lastName || !donorInfo.email) {
-      alert('Please fill in all required fields');
+      alert("Please fill in all required fields");
       return;
     }
 
     if (amount < 1) {
-      alert('Please select a donation amount');
+      alert("Please select a donation amount");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const endpoint = frequency === 'one-time'
-        ? '/api/stripe/create-checkout'
-        : '/api/stripe/create-subscription';
+      const endpoint =
+        frequency === "one-time"
+          ? "/api/stripe/create-checkout"
+          : "/api/stripe/create-subscription";
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           frequency,
@@ -78,11 +98,11 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.error || "Failed to create checkout session");
       }
     } catch (error) {
-      console.error('Error:', error);
-      alert('There was an error processing your donation. Please try again.');
+      console.error("Error:", error);
+      alert("There was an error processing your donation. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +123,7 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
             frequency={frequency}
             onFrequencyChange={(f) => {
               setFrequency(f);
-              setAmount(DONATION_PRODUCTS[f].default);
+              setAmount(products[f].default);
             }}
           />
 
@@ -111,6 +131,7 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
             frequency={frequency}
             selectedAmount={amount}
             onAmountChange={setAmount}
+            config={products[frequency]}
           />
 
           {/* Processing Fee Option */}
@@ -129,7 +150,8 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
                   Cover processing fees (${processingFee.toFixed(2)})
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  Your donation will cover the transaction costs so 100% goes to our programs
+                  Your donation will cover the transaction costs so 100% goes to
+                  our programs
                 </p>
               </div>
             </div>
@@ -155,12 +177,16 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Donation Amount</span>
+              <span className="text-sm text-muted-foreground">
+                Donation Amount
+              </span>
               <span className="font-medium">${amount.toFixed(2)}</span>
             </div>
             {coverFees && (
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Processing Fee</span>
+                <span className="text-sm text-muted-foreground">
+                  Processing Fee
+                </span>
                 <span className="font-medium">${processingFee.toFixed(2)}</span>
               </div>
             )}
@@ -168,9 +194,9 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
               <span className="font-medium">Total</span>
               <span className="text-xl font-bold text-primary">
                 ${totalAmount.toFixed(2)}
-                {frequency !== 'one-time' && (
+                {frequency !== "one-time" && (
                   <span className="text-sm font-normal text-muted-foreground ml-1">
-                    /{frequency === 'monthly' ? 'month' : 'year'}
+                    /{frequency === "monthly" ? "month" : "year"}
                   </span>
                 )}
               </span>
@@ -190,7 +216,9 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
               ) : (
                 <>
                   <Heart className="mr-2 h-5 w-5" />
-                  {frequency === 'one-time' ? 'Donate Now' : `Start ${frequency} Donation`}
+                  {frequency === "one-time"
+                    ? "Donate Now"
+                    : `Start ${frequency} Donation`}
                 </>
               )}
             </Button>
@@ -201,7 +229,10 @@ export function DonationForm({ defaultFrequency = 'one-time', defaultAmount }: D
                 <span>Secure donation powered by Stripe</span>
               </div>
               <p>KGNA is a 501(c)(3) tax-exempt organization</p>
-              <p>Your donation is tax-deductible to the fullest extent allowed by law</p>
+              <p>
+                Your donation is tax-deductible to the fullest extent allowed by
+                law
+              </p>
             </div>
           </div>
         </CardContent>

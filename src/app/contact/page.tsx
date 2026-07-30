@@ -5,7 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -18,7 +24,7 @@ import {
   MessageCircle,
   CheckCircle,
   AlertCircle,
-  Loader2
+  Loader2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { ORGANIZATION_INFO } from "@/lib/constants";
@@ -46,34 +52,60 @@ const interestOptions = [
   "Cultural Programs",
   "Youth Programs",
   "Membership",
-  "General Inquiry"
+  "General Inquiry",
 ];
 
 const faqData = [
   {
     question: "How can I become a member of KGNA?",
-    answer: "Membership is open to all individuals interested in preserving and promoting Kashmiri culture. You can join by filling out our membership form online or at any of our events."
+    answer:
+        "Membership is open to all individuals interested in preserving and promoting Kashmiri culture. You can join by filling out our membership form online or at any of our events.",
   },
   {
     question: "Are your events open to non-Kashmiris?",
-    answer: "Yes! Our events are open to everyone interested in learning about and experiencing Kashmiri culture. We welcome all who wish to participate in our cultural celebrations."
+    answer:
+        "Yes. We welcome everyone interested in learning about and experiencing Kashmiri culture, whatever their background. Note that admission depends on the event: some gatherings are open to the community, while others are private, ticketed events that require an invitation.",
+  },
+  {
+    question: "How do I attend a KGNA event?",
+    answer:
+        "Several of our events are private and ticketed, and attendance is by invitation only. There is no public registration for those events. Email the organizers at info@kgna.us to request an invitation, and if one is issued, ticketing is completed off-site through our ticketing partner.",
+  },
+  {
+    question: "Can I bring a guest or pass my invitation to someone else?",
+    answer:
+        "Invitations are issued to a named guest and are not transferable. If you would like to bring someone with you, mention it when you request your invitation so the organizers can confirm whether capacity allows.",
+  },
+  {
+    question: "What happens if an event is cancelled or rescheduled?",
+    answer:
+        "KGNA reserves the right to cancel and refund your registration if an event is cancelled or rescheduled, if venue capacity or safety requirements change, or if a registration was not made by the invited guest. Refunds are issued to the original payment method. We will contact registered guests by email as soon as a change is confirmed.",
+  },
+  {
+    question: "Are KGNA events photographed?",
+    answer:
+        "Yes. We photograph and record our events and may use those images in our gallery, newsletters, and promotional material. If you would prefer not to appear, tell an organizer at the event or contact us afterwards and we will remove identifiable images of you where reasonably possible.",
   },
   {
     question: "How can I volunteer for KGNA?",
-    answer: "We're always looking for volunteers! You can express your interest through the contact form above or email us directly at volunteer@kgna.us."
+    answer:
+        "We are always looking for volunteers. Use the contact form above and tick \"Volunteering\" under Areas of Interest, or email us at info@kgna.us.",
   },
   {
     question: "Do you offer Kashmiri language classes?",
-    answer: "Yes, we offer regular Kashmiri language workshops for both children and adults. Check our Events page for upcoming sessions."
+    answer:
+        "Yes, we offer regular Kashmiri language workshops for both children and adults. Check our Events page for upcoming sessions.",
   },
   {
     question: "How can I support KGNA's mission?",
-    answer: "You can support us through donations, volunteering, attending events, or spreading awareness about our initiatives. Visit our Donate page for more information."
+    answer:
+        "You can support us through donations, volunteering, attending events, or spreading awareness about our initiatives. Visit our Donate page for more information.",
   },
   {
     question: "Can I host a KGNA event in my city?",
-    answer: "Absolutely! We encourage community members to organize local events. Contact us to discuss how we can support your initiative."
-  }
+    answer:
+        "Absolutely! We encourage community members to organize local events. Contact us to discuss how we can support your initiative.",
+  },
 ];
 
 export default function ContactPage() {
@@ -85,17 +117,28 @@ export default function ContactPage() {
     phone: "",
     subject: "",
     message: "",
-    interests: []
+    interests: [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
-  const getSection = (type: string) => cmsContent?.sections.find((section) => section.type === type)?.props;
-  const text = (props: Record<string, unknown> | undefined, key: string, fallback: string) => {
+  const [submitStatus, setSubmitStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const getSection = (type: string) =>
+    cmsContent?.sections.find((section) => section.type === type)?.props;
+  const text = (
+    props: Record<string, unknown> | undefined,
+    key: string,
+    fallback: string,
+  ) => {
     const value = props?.[key];
     return typeof value === "string" && value.trim() ? value : fallback;
   };
-  const list = <T extends Record<string, unknown>>(props: Record<string, unknown> | undefined, key: string, fallback: T[]) => {
+  const list = <T extends Record<string, unknown>>(
+    props: Record<string, unknown> | undefined,
+    key: string,
+    fallback: T[],
+  ) => {
     const value = props?.[key];
     return Array.isArray(value) ? (value as T[]) : fallback;
   };
@@ -105,11 +148,15 @@ export default function ContactPage() {
   const form = getSection("form");
   const faq = getSection("faq");
   const faqs = list(faq, "items", faqData);
-  const socialLinks = list<Record<string, unknown>>(social, "items", list<Record<string, unknown>>(social, "links", [
-    { label: "Facebook", url: "https://facebook.com/kgnaus" },
-    { label: "Instagram", url: "https://instagram.com/kgnaus" },
-    { label: "Twitter", url: "https://twitter.com/kgnaus" },
-  ]));
+  const socialLinks = list<Record<string, unknown>>(
+    social,
+    "items",
+    list<Record<string, unknown>>(social, "links", [
+      { label: "Facebook", url: "https://facebook.com/kgnaus" },
+      { label: "Instagram", url: "https://instagram.com/kgnaus" },
+      { label: "Twitter", url: "https://twitter.com/kgnaus" },
+    ]),
+  );
 
   useEffect(() => {
     fetch("/api/cms/contact")
@@ -118,20 +165,41 @@ export default function ContactPage() {
       .catch(() => setCmsContent(null));
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  // Preselect an interest from ?interest=... so /volunteer can land people here
+  // with Volunteering already ticked. Read from location rather than
+  // useSearchParams so this prerendered route needs no Suspense boundary.
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get(
+      "interest",
+    );
+    const match = interestOptions.find(
+      (option) => option.toLowerCase() === requested?.toLowerCase(),
+    );
+    if (match) {
+      setFormData((prev) =>
+        prev.interests.includes(match)
+          ? prev
+          : { ...prev, interests: [...prev.interests, match] },
+      );
+    }
+  }, []);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleInterestToggle = (interest: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       interests: prev.interests.includes(interest)
-        ? prev.interests.filter(i => i !== interest)
-        : [...prev.interests, interest]
+        ? prev.interests.filter((i) => i !== interest)
+        : [...prev.interests, interest],
     }));
   };
 
@@ -141,7 +209,7 @@ export default function ContactPage() {
 
     // Simulate form submission
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setSubmitStatus("success");
       // Reset form
       setFormData({
@@ -151,7 +219,7 @@ export default function ContactPage() {
         phone: "",
         subject: "",
         message: "",
-        interests: []
+        interests: [],
       });
     } catch (error) {
       setSubmitStatus("error");
@@ -208,7 +276,10 @@ export default function ContactPage() {
                       <Mail className="h-5 w-5 text-primary mt-0.5" />
                       <div>
                         <p className="font-medium">Email</p>
-                        <a href={`mailto:${text(info, "email", ORGANIZATION_INFO.email)}`} className="text-sm text-muted-foreground hover:text-primary">
+                        <a
+                          href={`mailto:${text(info, "email", ORGANIZATION_INFO.email)}`}
+                          className="text-sm text-muted-foreground hover:text-primary"
+                        >
                           {text(info, "email", ORGANIZATION_INFO.email)}
                         </a>
                       </div>
@@ -219,8 +290,11 @@ export default function ContactPage() {
                       <div>
                         <p className="font-medium">Address</p>
                         <p className="text-sm text-muted-foreground">
-                          {ORGANIZATION_INFO.address.street}<br />
-                          {ORGANIZATION_INFO.address.city}, {ORGANIZATION_INFO.address.state} {ORGANIZATION_INFO.address.zip}
+                          {ORGANIZATION_INFO.address.street}
+                          <br />
+                          {ORGANIZATION_INFO.address.city},{" "}
+                          {ORGANIZATION_INFO.address.state}{" "}
+                          {ORGANIZATION_INFO.address.zip}
                         </p>
                       </div>
                     </div>
@@ -234,7 +308,11 @@ export default function ContactPage() {
                       {text(social, "heading", "Follow Us")}
                     </CardTitle>
                     <CardDescription>
-                      {text(social, "body", "Stay connected with our community on social media")}
+                      {text(
+                        social,
+                        "body",
+                        "Stay connected with our community on social media",
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
@@ -271,7 +349,11 @@ export default function ContactPage() {
                       {text(form, "heading", "Send us a Message")}
                     </CardTitle>
                     <CardDescription>
-                      {text(form, "body", "Fill out the form below and we'll get back to you as soon as possible")}
+                      {text(
+                        form,
+                        "body",
+                        "Fill out the form below and we'll get back to you as soon as possible",
+                      )}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -349,10 +431,14 @@ export default function ContactPage() {
                           Select all that apply
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {interestOptions.map(interest => (
+                          {interestOptions.map((interest) => (
                             <Badge
                               key={interest}
-                              variant={formData.interests.includes(interest) ? "default" : "outline"}
+                              variant={
+                                formData.interests.includes(interest)
+                                  ? "default"
+                                  : "outline"
+                              }
                               className="cursor-pointer"
                               onClick={() => handleInterestToggle(interest)}
                             >
@@ -380,7 +466,8 @@ export default function ContactPage() {
                         <Alert className="bg-green-50 text-green-800 border-green-200">
                           <CheckCircle className="h-4 w-4" />
                           <AlertDescription>
-                            Thank you for your message! We&apos;ll get back to you soon.
+                            Thank you for your message! We&apos;ll get back to
+                            you soon.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -389,7 +476,8 @@ export default function ContactPage() {
                         <Alert variant="destructive">
                           <AlertCircle className="h-4 w-4" />
                           <AlertDescription>
-                            There was an error sending your message. Please try again.
+                            There was an error sending your message. Please try
+                            again.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -430,7 +518,11 @@ export default function ContactPage() {
                 {text(faq, "heading", "Frequently Asked Questions")}
               </h2>
               <p className="text-muted-foreground">
-                {text(faq, "body", "Find answers to common questions about KGNA")}
+                {text(
+                  faq,
+                  "body",
+                  "Find answers to common questions about KGNA",
+                )}
               </p>
             </div>
 
@@ -463,7 +555,9 @@ export default function ContactPage() {
                 <Button
                   variant="link"
                   className="p-0 h-auto"
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
                 >
                   Contact us directly
                 </Button>
@@ -472,7 +566,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

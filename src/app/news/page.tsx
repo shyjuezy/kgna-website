@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
 import {
   Search,
   Calendar,
@@ -190,7 +191,7 @@ export default function NewsPage() {
           author: typeof record.author === "string" ? record.author : "KGNA",
           date: typeof record.date === "string" ? record.date : "",
           readTime: typeof record.readTime === "string" ? record.readTime : "3 min read",
-          image: typeof record.image === "string" ? record.image : PLACEHOLDER_IMAGES.community,
+          image: safeImageUrl(record.image, PLACEHOLDER_IMAGES.community),
           featured: record.featured === "yes",
           tags,
         };

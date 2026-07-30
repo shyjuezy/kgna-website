@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
+import { safeImageUrl } from "@/lib/images";
 import {
   Camera,
   Calendar,
@@ -208,7 +209,7 @@ export default function GalleryPage() {
           id: Number(record.id ?? index + 1),
           title: typeof record.title === "string" ? record.title : "Gallery photo",
           description: typeof record.description === "string" ? record.description : "",
-          image: typeof record.image === "string" ? record.image : PLACEHOLDER_IMAGES.community,
+          image: safeImageUrl(record.image, PLACEHOLDER_IMAGES.community),
           category: (typeof record.category === "string" ? record.category : "community") as GalleryCategory,
           date: typeof record.date === "string" ? record.date : undefined,
           location: typeof record.location === "string" ? record.location : undefined,

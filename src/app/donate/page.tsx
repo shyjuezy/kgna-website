@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
 import { getCmsPage, getSection, linesProp, listProp, optionalTextProp, textProp } from "@/lib/cms";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
@@ -40,6 +42,14 @@ export default async function DonatePage() {
   const tax = getSection(content, "tax") ?? getSection(content, "taxInfo");
   const otherWays = getSection(content, "otherWays");
   const supportReasons = listProp(support, "items", reasons);
+  // Amount + impact rows are authored in the admin (donate > Tiers > Items).
+  // Empty falls back to the built-in tiers in @/config/donation-tiers.
+  const tiersSection = getSection(content, "tiers");
+  const donationTiers = listProp<Record<string, unknown>>(
+    tiersSection,
+    "items",
+    [],
+  );
   const otherWayItems = linesProp(otherWays, "items", [
     "Donor Advised Funds",
     "Corporate Matching",
@@ -148,8 +158,18 @@ export default async function DonatePage() {
             </div>
 
             {/* Right Column - Form */}
-            <div className="lg:col-span-2">
-              <DonationForm />
+            <div className="lg:col-span-2 space-y-6">
+              {/* Patron route for donors who want the annual commitment. */}
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground">
+                  Prefer an annual commitment? Patrons fund a full year of
+                  programming.
+                </p>
+                <Button asChild variant="outline" className="shrink-0">
+                  <Link href="/patron">Become a patron</Link>
+                </Button>
+              </div>
+              <DonationForm tiers={donationTiers} />
             </div>
           </div>
         </div>

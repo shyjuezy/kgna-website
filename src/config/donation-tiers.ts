@@ -3,7 +3,7 @@ export interface DonationTier {
   impact: string;
 }
 
-interface DonationProduct {
+export interface DonationProduct {
   priceId?: string | null;
   amounts: number[];
   default: number;
@@ -97,3 +97,79 @@ export const DONATION_PRODUCTS: Record<'one-time' | 'monthly' | 'annual', Donati
     ]
   }
 };
+export type DonationFrequency = 'one-time' | 'monthly' | 'annual';
+
+/** One row as authored in the admin (all values arrive as strings). */
+export type CmsDonationTier = {
+  frequency?: unknown;
+  amount?: unknown;
+  impact?: unknown;
+};
+
+function normalizeFrequency(value: unknown): DonationFrequency {
+  const raw = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  if (raw === 'monthly') return 'monthly';
+  if (raw === 'annual' || raw === 'annually' || raw === 'yearly') return 'annual';
+  return 'one-time';
+}
+
+function normalizeAmount(value: unknown): number | null {
+  const raw = typeof value === 'string' ? value : String(value ?? '');
+  const parsed = Number.parseFloat(raw.replace(/[^0-9.]/g, ''));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+/**
+ * Applies admin-authored amount/impact rows on top of the built-in tiers.
+ *
+ * Amounts are safe to edit freely: recurring donations create their Stripe price
+ * on demand, so a new amount needs no Stripe setup. Frequencies with no rows in
+ * the CMS keep their built-in defaults.
+ */
+export function resolveDonationProducts(
+  cmsTiers?: CmsDonationTier[],
+): Record<DonationFrequency, DonationProduct> {
+  if (!cmsTiers?.length) {
+    return DONATION_PRODUCTS;
+  }
+
+  const grouped: Record<DonationFrequency, DonationTier[]> = {
+    'one-time': [],
+    monthly: [],
+    annual: [],
+  };
+
+  for (const row of cmsTiers) {
+    const amount = normalizeAmount(row.amount);
+    if (amount === null) continue;
+    grouped[normalizeFrequency(row.frequency)].push({
+      amount,
+      impact: typeof row.impact === 'string' ? row.impact.trim() : '',
+    });
+  }
+
+  const frequencies: DonationFrequency[] = ['one-time', 'monthly', 'annual'];
+  const resolved = {} as Record<DonationFrequency, DonationProduct>;
+
+  for (const frequency of frequencies) {
+    const base = DONATION_PRODUCTS[frequency];
+    const rows = grouped[frequency];
+
+    if (!rows.length) {
+      resolved[frequency] = base;
+      continue;
+    }
+
+    const sorted = [...rows].sort((a, b) => a.amount - b.amount);
+    const amounts = sorted.map((tier) => tier.amount);
+    resolved[frequency] = {
+      ...base,
+      amounts,
+      // Keep the previous default when the editor left it in the list.
+      default: amounts.includes(base.default) ? base.default : amounts[0],
+      tiers: sorted,
+    };
+  }
+
+  return resolved;
+}
