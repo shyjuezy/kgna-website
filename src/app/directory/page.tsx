@@ -45,32 +45,6 @@ const GROUPS = [
   },
 ] as const;
 
-/**
- * Seeded rows carry placeholder: "yes" so the admin has fields to fill in
- * without the site publishing "Example Sponsor" as a real listing. Clearing the
- * field (or adding a fresh row, which has no such field) makes a row live.
- */
-function isPlaceholder(item: Record<string, unknown>) {
-  const value = item.placeholder;
-  if (typeof value === "boolean" && value) return true;
-  if (typeof value === "string") {
-    const raw = value.trim().toLowerCase();
-    if (raw === "yes" || raw === "true" || raw === "1") return true;
-  }
-
-  // Rows seeded before the placeholder field existed are only identifiable by
-  // their example.com link. seedDefaults() inserts missing pages but never
-  // updates existing ones, so those rows persist until an editor saves.
-  const url = typeof item.url === "string" ? item.url.trim() : "";
-  if (!url) return false;
-  try {
-    const host = new URL(url).hostname.replace(/^www\./, "");
-    return host === "example.com";
-  } catch {
-    return false;
-  }
-}
-
 /** First letters of the name, used when a listing has no usable logo. */
 function initials(name: string) {
   return name
@@ -167,9 +141,11 @@ export default async function DirectoryPage() {
       ...group,
       heading: textProp(section, "heading", group.heading),
       body: textProp(section, "body", group.body),
-      items: listProp<Record<string, unknown>>(section, "items", []).filter(
-        (item) => !isPlaceholder(item),
-      ),
+      // Seeded example rows render as-is. They are deliberately worded as
+      // templates ("Example Sponsor", "Replace with...") so they read as
+      // fill-in-me content rather than as real listings, until an editor
+      // replaces them in the admin.
+      items: listProp<Record<string, unknown>>(section, "items", []),
     };
   }).filter((group) => group.items.length > 0);
 
