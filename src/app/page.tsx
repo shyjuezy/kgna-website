@@ -13,7 +13,8 @@ export default async function HomePage() {
   const mission = getSection(content, "mission");
   const events = getSection(content, "events");
   const impact = getSection(content, "impact");
-  const donation = getSection(content, "donation") ?? getSection(content, "donationCta");
+  const donation =
+    getSection(content, "donation") ?? getSection(content, "donationCta");
   const gallery = getSection(content, "gallery");
   const newsletter = getSection(content, "newsletter");
 
@@ -22,11 +23,25 @@ export default async function HomePage() {
       <Hero
         headline={optionalTextProp(hero, "headline")}
         subheadline={optionalTextProp(hero, "subheadline")}
-        cta1={optionalTextProp(hero, "cta1") ?? optionalTextProp(hero, "primaryLabel")}
-        cta2={optionalTextProp(hero, "cta2") ?? optionalTextProp(hero, "secondaryLabel")}
-        cta1Href={optionalTextProp(hero, "cta1Href") ?? optionalTextProp(hero, "primaryHref")}
-        cta2Href={optionalTextProp(hero, "cta2Href") ?? optionalTextProp(hero, "secondaryHref")}
-        image={optionalTextProp(hero, "image") ?? optionalTextProp(hero, "imageUrl")}
+        cta1={
+          optionalTextProp(hero, "cta1") ??
+          optionalTextProp(hero, "primaryLabel")
+        }
+        cta2={
+          optionalTextProp(hero, "cta2") ??
+          optionalTextProp(hero, "secondaryLabel")
+        }
+        cta1Href={
+          optionalTextProp(hero, "cta1Href") ??
+          optionalTextProp(hero, "primaryHref")
+        }
+        cta2Href={
+          optionalTextProp(hero, "cta2Href") ??
+          optionalTextProp(hero, "secondaryHref")
+        }
+        image={
+          optionalTextProp(hero, "image") ?? optionalTextProp(hero, "imageUrl")
+        }
       />
       <MissionStatement
         heading={optionalTextProp(mission, "heading")}
@@ -46,9 +61,10 @@ export default async function HomePage() {
       <DonationCTA
         heading={optionalTextProp(donation, "heading")}
         body={optionalTextProp(donation, "body")}
-        monthlyHeading={optionalTextProp(donation, "monthlyHeading")}
-        monthlyBody={optionalTextProp(donation, "monthlyBody")}
+        patronHeading={optionalTextProp(donation, "patronHeading")}
+        patronBody={optionalTextProp(donation, "patronBody")}
         cta={optionalTextProp(donation, "cta")}
+        ctaHref={optionalTextProp(donation, "ctaHref")}
       />
       <FeaturedGallery
         heading={optionalTextProp(gallery, "heading")}

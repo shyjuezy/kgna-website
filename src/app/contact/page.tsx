@@ -16,7 +16,6 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Mail,
-  MapPin,
   Send,
   Facebook,
   Instagram,
@@ -59,52 +58,52 @@ const faqData = [
   {
     question: "How can I become a member of KGNA?",
     answer:
-        "Membership is open to all individuals interested in preserving and promoting Kashmiri culture. You can join by filling out our membership form online or at any of our events.",
+      "Membership is open to all individuals interested in preserving and promoting Kashmiri culture. You can join by filling out our membership form online or at any of our events.",
   },
   {
     question: "Are your events open to non-Kashmiris?",
     answer:
-        "Yes. We welcome everyone interested in learning about and experiencing Kashmiri culture, whatever their background. Note that admission depends on the event: some gatherings are open to the community, while others are private, ticketed events that require an invitation.",
+      "Yes. We welcome everyone interested in learning about and experiencing Kashmiri culture, whatever their background. Note that admission depends on the event: some gatherings are open to the community, while others are private, ticketed events that require an invitation.",
   },
   {
     question: "How do I attend a KGNA event?",
     answer:
-        "Several of our events are private and ticketed, and attendance is by invitation only. There is no public registration for those events. Email the organizers at info@kgna.us to request an invitation, and if one is issued, ticketing is completed off-site through our ticketing partner.",
+      "Several of our events are private and ticketed, and attendance is by invitation only. There is no public registration for those events. Email the organizers at info@kgna.us to request an invitation, and if one is issued, ticketing is completed off-site through our ticketing partner.",
   },
   {
     question: "Can I bring a guest or pass my invitation to someone else?",
     answer:
-        "Invitations are issued to a named guest and are not transferable. If you would like to bring someone with you, mention it when you request your invitation so the organizers can confirm whether capacity allows.",
+      "Invitations are issued to a named guest and are not transferable. If you would like to bring someone with you, mention it when you request your invitation so the organizers can confirm whether capacity allows.",
   },
   {
     question: "What happens if an event is cancelled or rescheduled?",
     answer:
-        "KGNA reserves the right to cancel and refund your registration if an event is cancelled or rescheduled, if venue capacity or safety requirements change, or if a registration was not made by the invited guest. Refunds are issued to the original payment method. We will contact registered guests by email as soon as a change is confirmed.",
+      "KGNA reserves the right to cancel and refund your registration if an event is cancelled or rescheduled, if venue capacity or safety requirements change, or if a registration was not made by the invited guest. Refunds are issued to the original payment method. We will contact registered guests by email as soon as a change is confirmed.",
   },
   {
     question: "Are KGNA events photographed?",
     answer:
-        "Yes. We photograph and record our events and may use those images in our gallery, newsletters, and promotional material. If you would prefer not to appear, tell an organizer at the event or contact us afterwards and we will remove identifiable images of you where reasonably possible.",
+      "Yes. We photograph and record our events and may use those images in our gallery, newsletters, and promotional material. If you would prefer not to appear, tell an organizer at the event or contact us afterwards and we will remove identifiable images of you where reasonably possible.",
   },
   {
     question: "How can I volunteer for KGNA?",
     answer:
-        "We are always looking for volunteers. Use the contact form above and tick \"Volunteering\" under Areas of Interest, or email us at info@kgna.us.",
+      'We are always looking for volunteers. Use the contact form above and tick "Volunteering" under Areas of Interest, or email us at info@kgna.us.',
   },
   {
     question: "Do you offer Kashmiri language classes?",
     answer:
-        "Yes, we offer regular Kashmiri language workshops for both children and adults. Check our Events page for upcoming sessions.",
+      "Yes, we offer regular Kashmiri language workshops for both children and adults. Check our Events page for upcoming sessions.",
   },
   {
     question: "How can I support KGNA's mission?",
     answer:
-        "You can support us through donations, volunteering, attending events, or spreading awareness about our initiatives. Visit our Donate page for more information.",
+      "You can support us through donations, volunteering, attending events, or spreading awareness about our initiatives. Visit our Donate page for more information.",
   },
   {
     question: "Can I host a KGNA event in my city?",
     answer:
-        "Absolutely! We encourage community members to organize local events. Contact us to discuss how we can support your initiative.",
+      "Absolutely! We encourage community members to organize local events. Contact us to discuss how we can support your initiative.",
   },
 ];
 
@@ -282,20 +281,6 @@ export default function ContactPage() {
                         >
                           {text(info, "email", ORGANIZATION_INFO.email)}
                         </a>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <p className="font-medium">Address</p>
-                        <p className="text-sm text-muted-foreground">
-                          {ORGANIZATION_INFO.address.street}
-                          <br />
-                          {ORGANIZATION_INFO.address.city},{" "}
-                          {ORGANIZATION_INFO.address.state}{" "}
-                          {ORGANIZATION_INFO.address.zip}
-                        </p>
                       </div>
                     </div>
                   </CardContent>

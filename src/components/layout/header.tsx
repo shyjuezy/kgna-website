@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -29,20 +30,29 @@ export function Header() {
         "sticky top-0 z-50 w-full transition-all duration-300",
         isScrolled
           ? "bg-background/95 backdrop-blur-md border-b shadow-sm"
-          : "bg-background border-b"
+          : "bg-background border-b",
       )}
     >
       <div className="container mx-auto px-4">
-        <div className={cn(
-          "flex items-center justify-between transition-all duration-300",
-          isScrolled ? "h-14" : "h-16"
-        )}>
+        <div
+          className={cn(
+            "flex items-center justify-between transition-all duration-300",
+            isScrolled ? "h-14" : "h-16",
+          )}
+        >
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <span className={cn(
-              "font-bold text-primary transition-all duration-300",
-              isScrolled ? "text-xl" : "text-2xl"
-            )}>KGNA</span>
+            <Image
+              src="/images/kgna-logo.png"
+              alt="KGNA - Kashmiri Group of North America"
+              width={512}
+              height={512}
+              priority
+              className={cn(
+                "w-auto transition-all duration-300",
+                isScrolled ? "h-10" : "h-12",
+              )}
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -55,7 +65,7 @@ export function Header() {
                   "px-4 py-2 rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                   pathname === item.href
                     ? "bg-accent text-accent-foreground"
-                    : "text-foreground/60 hover:text-foreground"
+                    : "text-foreground/60 hover:text-foreground",
                 )}
               >
                 {item.title}
@@ -70,10 +80,12 @@ export function Header() {
                 className="bg-primary hover:bg-primary/90 transition-all duration-300"
                 size={isScrolled ? "sm" : "default"}
               >
-                <Heart className={cn(
-                  "mr-2 transition-all duration-300",
-                  isScrolled ? "h-3.5 w-3.5" : "h-4 w-4"
-                )} />
+                <Heart
+                  className={cn(
+                    "mr-2 transition-all duration-300",
+                    isScrolled ? "h-3.5 w-3.5" : "h-4 w-4",
+                  )}
+                />
                 Donate Now
               </Button>
             </Link>
@@ -96,7 +108,7 @@ export function Header() {
                         "block py-2 px-3 rounded-md font-medium transition-colors",
                         pathname === item.href
                           ? "bg-accent text-accent-foreground"
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          : "hover:bg-accent hover:text-accent-foreground",
                       )}
                     >
                       {item.title}

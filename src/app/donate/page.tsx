@@ -3,42 +3,68 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
-import { getCmsPage, getSection, linesProp, listProp, optionalTextProp, textProp } from "@/lib/cms";
+import {
+  getCmsPage,
+  getSection,
+  linesProp,
+  listProp,
+  optionalTextProp,
+  textProp,
+} from "@/lib/cms";
+import type { DonationFrequency } from "@/config/donation-tiers";
 import { PLACEHOLDER_IMAGES } from "@/lib/constants";
 import { Heart, Users, TrendingUp, Globe } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Donate - Support Our Mission",
-  description: "Support KGNA's mission to preserve Kashmiri culture and identity through your generous donation.",
+  description:
+    "Support KGNA's mission to preserve Kashmiri culture and identity through your generous donation.",
 };
 
 const reasons = [
   {
     icon: Heart,
     title: "Preserve Heritage",
-    description: "Help maintain and pass on Kashmiri traditions to future generations"
+    description:
+      "Help maintain and pass on Kashmiri traditions to future generations",
   },
   {
     icon: Users,
     title: "Build Community",
-    description: "Support programs that bring the Kashmiri diaspora together"
+    description: "Support programs that bring the Kashmiri diaspora together",
   },
   {
     icon: TrendingUp,
     title: "Enable Growth",
-    description: "Fund educational initiatives and cultural events"
+    description: "Fund educational initiatives and cultural events",
   },
   {
     icon: Globe,
     title: "Expand Reach",
-    description: "Help us serve more communities across North America"
-  }
+    description: "Help us serve more communities across North America",
+  },
 ];
 
-export default async function DonatePage() {
+/** "annual"/"yearly" -> annual, "monthly" -> monthly, anything else -> undefined. */
+function parseFrequency(value: unknown): DonationFrequency | undefined {
+  const raw = typeof value === "string" ? value.trim().toLowerCase() : "";
+  if (raw === "monthly") return "monthly";
+  if (raw === "annual" || raw === "annually" || raw === "yearly")
+    return "annual";
+  if (raw === "one-time" || raw === "once") return "one-time";
+  return undefined;
+}
+
+export default async function DonatePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
   const content = await getCmsPage("donate");
   const hero = getSection(content, "hero");
-  const support = getSection(content, "support") ?? getSection(content, "reasons");
+  const support =
+    getSection(content, "support") ?? getSection(content, "reasons");
   const tax = getSection(content, "tax") ?? getSection(content, "taxInfo");
   const otherWays = getSection(content, "otherWays");
   const supportReasons = listProp(support, "items", reasons);
@@ -50,6 +76,22 @@ export default async function DonatePage() {
     "items",
     [],
   );
+  // Links elsewhere on the site preselect a frequency/amount, e.g. the home
+  // patron CTA sends ?frequency=annual. Anything unparseable falls through to
+  // the form's own defaults rather than erroring.
+  const requestedFrequency = parseFrequency(params.frequency);
+  const requestedAmountRaw = Number.parseFloat(
+    String(
+      Array.isArray(params.amount) ? params.amount[0] : (params.amount ?? ""),
+    ),
+  );
+  const requestedAmount =
+    Number.isFinite(requestedAmountRaw) &&
+    requestedAmountRaw > 0 &&
+    requestedAmountRaw <= 100000
+      ? requestedAmountRaw
+      : undefined;
+
   const otherWayItems = linesProp(otherWays, "items", [
     "Donor Advised Funds",
     "Corporate Matching",
@@ -92,17 +134,19 @@ export default async function DonatePage() {
                   {supportReasons.map((reason, index) => {
                     const Icon = reasons[index]?.icon ?? Heart;
                     return (
-                    <div key={reason.title} className="flex gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Icon className="h-5 w-5 text-primary" />
+                      <div key={reason.title} className="flex gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            <Icon className="h-5 w-5 text-primary" />
+                          </div>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-1">{reason.title}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {reason.description}
+                          </p>
                         </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold mb-1">{reason.title}</h3>
-                        <p className="text-sm text-muted-foreground">{reason.description}</p>
-                      </div>
-                    </div>
                     );
                   })}
                 </div>
@@ -121,14 +165,25 @@ export default async function DonatePage() {
                   )}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {textProp(tax, "ein", textProp(tax, "note", "EIN: XX-XXXXXXX (will be provided on your receipt)"))}
+                  {textProp(
+                    tax,
+                    "ein",
+                    textProp(
+                      tax,
+                      "note",
+                      "EIN: XX-XXXXXXX (will be provided on your receipt)",
+                    ),
+                  )}
                 </p>
               </div>
 
               {/* Image */}
               <div className="relative h-64 rounded-lg overflow-hidden">
                 <Image
-                  src={optionalTextProp(support, "image") ?? PLACEHOLDER_IMAGES.community}
+                  src={
+                    optionalTextProp(support, "image") ??
+                    PLACEHOLDER_IMAGES.community
+                  }
                   alt="KGNA Community"
                   fill
                   className="object-cover"
@@ -151,7 +206,11 @@ export default async function DonatePage() {
                     href={`mailto:${textProp(otherWays, "email", textProp(otherWays, "contactEmail", "donate@kgna.us"))}`}
                     className="text-primary hover:underline"
                   >
-                    {textProp(otherWays, "email", textProp(otherWays, "contactEmail", "donate@kgna.us"))}
+                    {textProp(
+                      otherWays,
+                      "email",
+                      textProp(otherWays, "contactEmail", "donate@kgna.us"),
+                    )}
                   </a>
                 </p>
               </div>
@@ -169,7 +228,11 @@ export default async function DonatePage() {
                   <Link href="/patron">Become a patron</Link>
                 </Button>
               </div>
-              <DonationForm tiers={donationTiers} />
+              <DonationForm
+                tiers={donationTiers}
+                defaultFrequency={requestedFrequency}
+                defaultAmount={requestedAmount}
+              />
             </div>
           </div>
         </div>
