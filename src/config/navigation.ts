@@ -49,6 +49,7 @@ export const footerNav = {
     { title: "Past Events", href: "/events?tab=past" },
     { title: "Donate", href: "/donate" },
     { title: "Become a Patron", href: "/patron" },
+    { title: "Community Directory", href: "/directory" },
   ],
   legal: [
     { title: "Privacy Policy", href: "/privacy" },
