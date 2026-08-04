@@ -1,0 +1,5 @@
+allowBuilds:
+  # Native image pipeline Next.js uses for next/image optimization.
+  sharp: true
+  # Native resolver behind eslint-import-resolver, needed for pnpm lint.
+  unrs-resolver: true

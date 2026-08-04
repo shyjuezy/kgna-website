@@ -20,7 +20,7 @@ const playfairDisplay = Playfair_Display({
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s | ${siteConfig.name}`
+    template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   keywords: siteConfig.keywords,
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     {
       name: "KGNA",
       url: siteConfig.url,
-    }
+    },
   ],
   creator: "KGNA",
   openGraph: {
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: siteConfig.name,
-      }
+      },
     ],
   },
   twitter: {
@@ -55,8 +55,13 @@ export const metadata: Metadata = {
     creator: "@kgnaus",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    // favicon.ico bundles 16/32/48 for older browsers; the explicit PNGs let
+    // Chrome pick a crisp source per DPI instead of upscaling the 16px frame.
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+    ],
     apple: "/apple-touch-icon.png",
   },
   manifest: `/site.webmanifest`,
@@ -70,7 +75,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className={`${inter.variable} ${playfairDisplay.variable} font-sans antialiased`}>
+      <body
+        className={`${inter.variable} ${playfairDisplay.variable} font-sans antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

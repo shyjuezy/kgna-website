@@ -22,12 +22,11 @@ export const ORGANIZATION_INFO = {
   shortName: "KGNA",
   taxStatus: "501(c)(3) tax-exempt organization",
   email: "info@kgna.us",
-  phone: "(555) 123-4567",
   address: {
-    street: "123 Main Street",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
+    street: "3255 Lawrenceville Suwanee Road, Suite P-129",
+    city: "Suwanee",
+    state: "GA",
+    zip: "30024",
     country: "USA",
   },
 };
@@ -51,10 +50,12 @@ export const LEGAL_INFO: LegalInfo = {
   determinationDate: null,
   // TODO(kgna): state whose law governs the Terms of Service, e.g. "New York".
   governingState: null,
-  // ORGANIZATION_INFO.address is still the scaffold placeholder ("123 Main
-  // Street"). Until a real address is in place the legal pages publish an
-  // email-only contact block rather than a fabricated mailing address.
-  // TODO(kgna): set to true once ORGANIZATION_INFO.address is the real address.
+  // ORGANIZATION_INFO.address is now the real Suwanee address, but this stays
+  // false deliberately: flipping it publishes that address on /privacy, /terms
+  // and /nonprofit-status as the org's address for legal notices and donation
+  // disputes, which is a separate decision from showing it in the footer.
+  // TODO(kgna): set to true once KGNA confirms this suite should receive legal
+  // mail - and bump effectiveDate below when you do, since the pages gain text.
   mailingAddressConfirmed: false,
   // Bump this whenever the text of the legal pages changes.
   effectiveDate: "July 29, 2026",

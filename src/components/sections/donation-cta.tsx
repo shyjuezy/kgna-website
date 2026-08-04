@@ -2,25 +2,36 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Heart, Users, TrendingUp } from "lucide-react";
+import { Award, Heart, Repeat, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 const donationAmounts = [25, 50, 100, 250];
 
+// Kept in step with the three benefits on /patron so the promise made here is
+// the one the landing page actually explains.
+const patronBenefits = [
+  { icon: Heart, label: "Tax-deductible" },
+  { icon: Repeat, label: "Funds a full year of programmes" },
+  { icon: Award, label: "Recognition, if you want it" },
+];
+
 type DonationCTAProps = {
   heading?: string;
   body?: string;
-  monthlyHeading?: string;
-  monthlyBody?: string;
+  patronHeading?: string;
+  patronBody?: string;
   cta?: string;
+  ctaHref?: string;
 };
 
 export function DonationCTA({
   heading = "Support Our Mission",
   body = "Your generosity helps us preserve Kashmiri heritage, support our community, and create lasting connections for future generations.",
-  monthlyHeading = "Become a Monthly Supporter",
-  monthlyBody = "Join our community of sustaining donors and make a lasting impact with regular monthly contributions.",
-  cta = "Become a Monthly Supporter",
+  patronHeading = "Become a Patron",
+  patronBody = "Patrons make an annual commitment that lets us plan festivals, classes, and youth programs a year ahead instead of month to month.",
+  cta = "Become a Patron",
+  // Lands on the donation form with the annual (patron) frequency preselected.
+  ctaHref = "/donate?frequency=annual",
 }: DonationCTAProps) {
   return (
     <section className="py-20 bg-gradient-to-br from-primary/10 to-accent/10">
@@ -42,55 +53,82 @@ export function DonationCTA({
           {/* Quick Donation Buttons */}
           <div className="flex flex-wrap gap-4 justify-center mb-8">
             {donationAmounts.map((amount) => (
-              <Link key={amount} href={`/donate?amount=${amount}`}>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="min-w-[100px] hover:bg-primary hover:text-primary-foreground"
-                >
-                  ${amount}
-                </Button>
-              </Link>
-            ))}
-            <Link href="/donate">
               <Button
+                key={amount}
+                asChild
                 variant="outline"
                 size="lg"
                 className="min-w-[100px] hover:bg-primary hover:text-primary-foreground"
               >
-                Custom
+                <Link href={`/donate?frequency=one-time&amount=${amount}`}>
+                  ${amount}
+                </Link>
               </Button>
-            </Link>
+            ))}
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="min-w-[100px] hover:bg-primary hover:text-primary-foreground"
+            >
+              <Link href="/donate?frequency=one-time">Custom</Link>
+            </Button>
           </div>
 
-          {/* Monthly Support CTA */}
-          <div className="bg-card rounded-lg p-8 shadow-lg">
-            <h3 className="text-2xl font-semibold mb-4">{monthlyHeading}</h3>
-            <p className="text-muted-foreground mb-6">
-              {monthlyBody}
+          {/* Patron CTA - the headline ask of this section */}
+          <div className="relative overflow-hidden rounded-2xl bg-card p-8 md:p-10 shadow-lg ring-1 ring-primary/15">
+            {/* Accent rule that lifts the card above the plain white it was */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-primary/60 to-secondary"
+            />
+
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary">
+              <Sparkles className="h-3.5 w-3.5" />
+              Patron programme
+            </span>
+
+            <h3 className="mt-5 text-2xl md:text-3xl font-serif font-bold">
+              {patronHeading}
+            </h3>
+            <p className="mt-3 mx-auto max-w-2xl text-muted-foreground">
+              {patronBody}
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="flex items-center justify-center gap-2">
-                <Heart className="h-5 w-5 text-primary" />
-                <span className="text-sm">Tax-deductible</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span className="text-sm">Join 500+ donors</span>
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                <span className="text-sm">Maximum impact</span>
-              </div>
+            <div className="my-8 grid grid-cols-1 md:grid-cols-3 gap-3">
+              {patronBenefits.map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary/5 ring-1 ring-primary/10 px-3 py-3"
+                >
+                  <Icon className="h-5 w-5 shrink-0 text-primary" />
+                  <span className="text-sm">{label}</span>
+                </div>
+              ))}
             </div>
 
-            <Link href="/donate?frequency=monthly">
-              <Button size="lg" className="bg-primary hover:bg-primary/90">
+            <Button
+              asChild
+              size="lg"
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Link href={ctaHref}>
                 <Heart className="mr-2 h-5 w-5" />
                 {cta}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
+
+            {/* Monthly giving still exists - keep a way in now that the primary
+                action points at the patron page instead. */}
+            <p className="mt-4 text-sm text-muted-foreground">
+              Prefer to give monthly?{" "}
+              <Link
+                href="/donate?frequency=monthly"
+                className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+              >
+                Set up a recurring gift
+              </Link>
+            </p>
           </div>
         </motion.div>
       </div>

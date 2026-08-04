@@ -2,12 +2,38 @@ import Link from "next/link";
 import { footerNav } from "@/config/navigation";
 import { siteConfig } from "@/config/site";
 import { ORGANIZATION_INFO } from "@/lib/constants";
+import { getCmsPage, getSection, listProp } from "@/lib/cms";
 import { Facebook, Instagram, Twitter, Mail, MapPin } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export function Footer() {
+/** Falls back to the built-in links whenever the CMS is unreachable. */
+const FALLBACK_SOCIAL_LINKS = [
+  { label: "Facebook", url: siteConfig.links.facebook },
+  { label: "Instagram", url: siteConfig.links.instagram },
+  { label: "Twitter", url: siteConfig.links.twitter },
+];
+
+function iconFor(label: string) {
+  const name = label.toLowerCase();
+  if (name.includes("instagram")) return Instagram;
+  if (name.includes("twitter")) return Twitter;
+  return Facebook;
+}
+
+export async function Footer() {
+  // The footer is global but CMS content is per page, so the social links are
+  // read from the contact page's "social" section - the same rows the admin
+  // edits under Contact. That keeps the footer and /contact from disagreeing.
+  const contact = await getCmsPage("contact");
+  const social = getSection(contact, "social");
+  const socialLinks = listProp<Record<string, unknown>>(
+    social,
+    "items",
+    listProp<Record<string, unknown>>(social, "links", FALLBACK_SOCIAL_LINKS),
+  );
+
   return (
     <footer className="bg-secondary text-secondary-foreground">
       <div className="container mx-auto px-4 py-12">
@@ -102,30 +128,25 @@ export function Footer() {
 
             {/* Social Media */}
             <div className="flex gap-4">
-              <Link
-                href={siteConfig.links.facebook}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-90 hover:opacity-100 transition-opacity"
-              >
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link
-                href={siteConfig.links.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-90 hover:opacity-100 transition-opacity"
-              >
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link
-                href={siteConfig.links.twitter}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-90 hover:opacity-100 transition-opacity"
-              >
-                <Twitter className="h-5 w-5" />
-              </Link>
+              {socialLinks.map((link) => {
+                const label = String(link.label ?? "Social");
+                const href = String(link.url ?? link.href ?? "");
+                if (!href) return null;
+                const Icon = iconFor(label);
+
+                return (
+                  <Link
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="opacity-90 hover:opacity-100 transition-opacity"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </div>
