@@ -27,6 +27,10 @@ export const mainNav: NavItem[] = [
     href: "/news",
   },
   {
+    title: "Directory",
+    href: "/directory",
+  },
+  {
     title: "Patron",
     href: "/patron",
   },
