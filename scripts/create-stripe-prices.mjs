@@ -26,10 +26,12 @@ const PRODUCT_NAME = "Recurring Donation to KGNA";
 const PRODUCT_MARKER = "kgna_recurring_donation";
 
 // Mirrors the fixed tiers in src/config/donation-tiers.ts. $1000 annual is
-// omitted: the CMS no longer offers it.
+// included even though the CMS no longer offers that tier: the env var and the
+// code's price map still reference it, so leaving it out would leave one
+// placeholder behind and one amount still minting a Product per donation.
 const TIERS = [
   { interval: "month", envWord: "MONTHLY", key: "monthly", amounts: [10, 25, 50, 100] },
-  { interval: "year", envWord: "ANNUAL", key: "annual", amounts: [100, 250, 500] },
+  { interval: "year", envWord: "ANNUAL", key: "annual", amounts: [100, 250, 500, 1000] },
 ];
 
 const secretKey = process.env.STRIPE_SECRET_KEY;
