@@ -186,13 +186,17 @@ export default async function DirectoryPage() {
                 <p className="text-center text-muted-foreground mb-10 max-w-2xl mx-auto">
                   {group.body}
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Flex rather than grid: section counts vary, and a grid pins
+                    a lone card to column 1 with a wide gap beside it. Widths
+                    match a 2-up / 3-up grid, so full rows still line up. */}
+                <div className="flex flex-wrap justify-center gap-6">
                   {group.items.map((item, itemIndex) => (
-                    <ListingCard
+                    <div
                       key={`${String(item.name ?? "")}-${itemIndex}`}
-                      item={item}
-                      badgeKey={group.badgeKey}
-                    />
+                      className="w-full md:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)]"
+                    >
+                      <ListingCard item={item} badgeKey={group.badgeKey} />
+                    </div>
                   ))}
                 </div>
               </div>
