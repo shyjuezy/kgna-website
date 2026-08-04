@@ -67,6 +67,19 @@ export default async function DonatePage({
     getSection(content, "support") ?? getSection(content, "reasons");
   const tax = getSection(content, "tax") ?? getSection(content, "taxInfo");
   const otherWays = getSection(content, "otherWays");
+  const directGiving = getSection(content, "directGiving");
+  // Defaulted in code, not just seeded: the donate page already exists in the
+  // CMS and seedDefaults() only inserts missing pages, so a seed-only value
+  // would never reach this page. Handle taken from the Zelle popup on the
+  // current kgna.us site.
+  const zelleHandle = textProp(
+    directGiving,
+    "zelleHandle",
+    "treasurer@kgna.us",
+  ).trim();
+  // Unset until someone supplies the real PayPal target; the block stays
+  // hidden rather than shipping a guessed donate link.
+  const paypalUrl = textProp(directGiving, "paypalUrl", "").trim();
   const supportReasons = listProp(support, "items", reasons);
   // Amount + impact rows are authored in the admin (donate > Tiers > Items).
   // Empty falls back to the built-in tiers in @/config/donation-tiers.
@@ -189,6 +202,61 @@ export default async function DonatePage({
                   className="object-cover"
                 />
               </div>
+
+              {/* Direct giving - Zelle and PayPal. Zelle has no merchant API,
+                  so it can only ever be handle-plus-instructions: nothing
+                  confirms the transfer back to us. PayPal renders only once a
+                  URL is configured, so an unset value shows nothing rather
+                  than a dead donate button. */}
+              {zelleHandle || paypalUrl ? (
+                <div className="rounded-lg border p-6 space-y-5">
+                  <h3 className="font-semibold">
+                    {textProp(directGiving, "heading", "Direct giving")}
+                  </h3>
+
+                  {zelleHandle ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Zelle</p>
+                      <p className="rounded-md bg-primary/5 px-3 py-2 font-mono text-sm break-all select-all">
+                        {zelleHandle}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {textProp(
+                          directGiving,
+                          "zelleNote",
+                          "Send from your banking app to the address above, and include your name so we can match the gift to you.",
+                        )}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {textProp(
+                          directGiving,
+                          "zelleReceiptNote",
+                          "Zelle gifts do not generate an automatic receipt - email us and we will send an acknowledgement for your records.",
+                        )}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {paypalUrl ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">PayPal</p>
+                      <Button asChild variant="outline" className="w-full">
+                        <a
+                          href={paypalUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {textProp(
+                            directGiving,
+                            "paypalLabel",
+                            "Donate with PayPal",
+                          )}
+                        </a>
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
 
               {/* Other Ways to Give */}
               <div className="bg-muted/30 p-6 rounded-lg">
