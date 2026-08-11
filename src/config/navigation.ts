@@ -11,6 +11,10 @@ export const mainNav: NavItem[] = [
     href: "/about",
   },
   {
+    title: "Patron",
+    href: "/patron",
+  },
+  {
     title: "Events",
     href: "/events",
   },
@@ -23,16 +27,8 @@ export const mainNav: NavItem[] = [
     href: "/gallery",
   },
   {
-    title: "News",
-    href: "/news",
-  },
-  {
-    title: "Directory",
-    href: "/directory",
-  },
-  {
-    title: "Patron",
-    href: "/patron",
+    title: "Sponsors",
+    href: "/sponsors",
   },
   {
     title: "Contact",
@@ -49,11 +45,10 @@ export const footerNav = {
   ],
   resources: [
     { title: "Culture & Heritage", href: "/culture" },
-    { title: "News & Updates", href: "/news" },
     { title: "Past Events", href: "/events?tab=past" },
     { title: "Donate", href: "/donate" },
     { title: "Become a Patron", href: "/patron" },
-    { title: "Community Directory", href: "/directory" },
+    { title: "Sponsors", href: "/sponsors" },
   ],
   legal: [
     { title: "Privacy Policy", href: "/privacy" },

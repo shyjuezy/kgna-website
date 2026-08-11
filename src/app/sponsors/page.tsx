@@ -8,7 +8,7 @@ import { safeImageUrl } from "@/lib/images";
 import { ExternalLink, MapPin } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Community Directory",
+  title: "Sponsors",
   description:
     "Sponsors, vendors, authors, and local businesses connected to the Kashmiri community across North America.",
 };
@@ -131,7 +131,10 @@ function ListingCard({
   );
 }
 
-export default async function DirectoryPage() {
+export default async function SponsorsPage() {
+  // The route is /sponsors but the CMS slug is still "directory" - the admin app
+  // keys content by slug, so renaming this string before the page is migrated
+  // there would silently empty every group on the live site.
   const content = await getCmsPage("directory");
   const hero = getSection(content, "hero");
 
@@ -156,7 +159,7 @@ export default async function DirectoryPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-              {textProp(hero, "heading", "Community Directory")}
+              {textProp(hero, "heading", "Sponsors")}
             </h1>
             <p className="text-lg text-muted-foreground">
               {textProp(
@@ -206,9 +209,7 @@ export default async function DirectoryPage() {
       ) : (
         <section className="py-20 bg-background">
           <div className="container mx-auto px-4 text-center text-muted-foreground">
-            <p>
-              Directory listings are being compiled. Please check back soon.
-            </p>
+            <p>Listings are being compiled. Please check back soon.</p>
           </div>
         </section>
       )}
