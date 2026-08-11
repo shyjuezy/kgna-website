@@ -249,7 +249,7 @@ export default function ContactPage() {
               {text(
                 hero,
                 "body",
-                "We're here to help and answer any questions you might have. We look forward to hearing from you!",
+                "Want to volunteer, sponsor an event, or just have a question? Tell us what you're interested in below and we'll get back to you.",
               )}
             </motion.p>
           </div>
