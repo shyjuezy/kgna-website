@@ -6,21 +6,9 @@ export interface Event {
   time: string;
   location: string;
   imageUrl?: string;
-  category: 'cultural' | 'educational' | 'social' | 'fundraiser';
+  category: "cultural" | "educational" | "social" | "fundraiser";
   registrationUrl?: string;
   isPastEvent?: boolean;
-}
-
-export interface NewsArticle {
-  id: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  publishedAt: Date;
-  imageUrl?: string;
-  category: string;
-  slug: string;
 }
 
 export interface TeamMember {
@@ -54,7 +42,7 @@ export interface DonorInfo {
 }
 
 export interface DonationFormData {
-  frequency: 'one-time' | 'monthly' | 'annual';
+  frequency: "one-time" | "monthly" | "annual";
   amount: number;
   customAmount?: number;
   coverFees: boolean;
