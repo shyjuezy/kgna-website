@@ -240,17 +240,31 @@ export default function GalleryPage() {
       .catch(() => setCmsContent(null));
   }, []);
 
-  const filteredItems = selectedCategory === "all"
-    ? cmsGalleryItems
-    : cmsGalleryItems.filter(item => item.category === selectedCategory);
+
 
   const featuredItems = cmsGalleryItems.filter(item => item.featured);
-  const currentCategoryData = categoryData.map((category) => ({
-    ...category,
-    count: category.value === "all"
-      ? cmsGalleryItems.length
-      : cmsGalleryItems.filter((item) => item.category === category.value).length,
-  }));
+  // An empty filter is not a browsing choice, it is a dead end that makes a
+  // small collection look broken. Show a category once it has a photo.
+  const currentCategoryData = categoryData
+    .map((category) => ({
+      ...category,
+      count: category.value === "all"
+        ? cmsGalleryItems.length
+        : cmsGalleryItems.filter((item) => item.category === category.value).length,
+    }))
+    .filter((category) => category.value === "all" || category.count > 0);
+
+  // The selected category can disappear when the client-side fetch replaces the
+  // items, which would otherwise leave an empty grid and no active button.
+  const activeCategory = currentCategoryData.some(
+    (category) => category.value === selectedCategory,
+  )
+    ? selectedCategory
+    : "all";
+
+  const filteredItems = activeCategory === "all"
+    ? cmsGalleryItems
+    : cmsGalleryItems.filter(item => item.category === activeCategory);
 
   return (
     <div className="min-h-screen">
@@ -334,7 +348,7 @@ export default function GalleryPage() {
                   return (
                     <Button
                       key={category.value}
-                      variant={selectedCategory === category.value ? "default" : "outline"}
+                      variant={activeCategory === category.value ? "default" : "outline"}
                       onClick={() => setSelectedCategory(category.value as GalleryCategory)}
                       className="flex items-center gap-2"
                     >
