@@ -29,6 +29,21 @@ import type { CmsPageContent } from "@/lib/cms";
 // Gallery categories
 type GalleryCategory = "all" | "events" | "culture" | "landscape" | "community" | "heritage";
 
+/**
+ * The admin offered a different set of category names for a while, so stored
+ * photos still carry them. Map them onto the filters this page actually shows,
+ * otherwise those photos are only reachable under "All Photos".
+ */
+const LEGACY_CATEGORIES: Record<string, GalleryCategory> = {
+  nature: "landscape",
+  people: "community",
+};
+
+function toGalleryCategory(raw: unknown): GalleryCategory {
+  if (typeof raw !== "string") return "community";
+  return LEGACY_CATEGORIES[raw] ?? (raw as GalleryCategory);
+}
+
 type GalleryItem = {
   id: number;
   title: string;
@@ -210,7 +225,7 @@ export default function GalleryPage() {
           title: typeof record.title === "string" ? record.title : "Gallery photo",
           description: typeof record.description === "string" ? record.description : "",
           image: safeImageUrl(record.image, PLACEHOLDER_IMAGES.community),
-          category: (typeof record.category === "string" ? record.category : "community") as GalleryCategory,
+          category: toGalleryCategory(record.category),
           date: typeof record.date === "string" ? record.date : undefined,
           location: typeof record.location === "string" ? record.location : undefined,
           featured: record.featured === "yes",
