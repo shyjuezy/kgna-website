@@ -29,8 +29,23 @@ import type { CmsPageContent } from "@/lib/cms";
 // Gallery categories
 type GalleryCategory = "all" | "events" | "culture" | "landscape" | "community" | "heritage";
 
+/**
+ * The admin offered a different set of category names for a while, so stored
+ * photos still carry them. Map them onto the filters this page actually shows,
+ * otherwise those photos are only reachable under "All Photos".
+ */
+const LEGACY_CATEGORIES: Record<string, GalleryCategory> = {
+  nature: "landscape",
+  people: "community",
+};
+
+function toGalleryCategory(raw: unknown): GalleryCategory {
+  if (typeof raw !== "string") return "community";
+  return LEGACY_CATEGORIES[raw] ?? (raw as GalleryCategory);
+}
+
 type GalleryItem = {
-  id: number;
+  id: string;
   title: string;
   description: string;
   image: string;
@@ -44,7 +59,7 @@ type GalleryItem = {
 const galleryItems: GalleryItem[] = [
   // Events
   {
-    id: 1,
+    id: "1",
     title: "Annual Cultural Festival 2024",
     description: "Community members celebrating at our flagship event",
     image: PLACEHOLDER_IMAGES.culturalEvent,
@@ -54,7 +69,7 @@ const galleryItems: GalleryItem[] = [
     featured: true
   },
   {
-    id: 2,
+    id: "2",
     title: "Youth Leadership Summit",
     description: "Young leaders discussing community initiatives",
     image: PLACEHOLDER_IMAGES.team,
@@ -63,7 +78,7 @@ const galleryItems: GalleryItem[] = [
     location: "Chicago"
   },
   {
-    id: 3,
+    id: "3",
     title: "Community Iftar Gathering",
     description: "Breaking fast together during Ramadan",
     image: PLACEHOLDER_IMAGES.community,
@@ -74,7 +89,7 @@ const galleryItems: GalleryItem[] = [
 
   // Culture
   {
-    id: 4,
+    id: "4",
     title: "Traditional Wazwan Preparation",
     description: "Master chefs preparing the grand feast",
     image: PLACEHOLDER_IMAGES.food,
@@ -83,7 +98,7 @@ const galleryItems: GalleryItem[] = [
     featured: true
   },
   {
-    id: 5,
+    id: "5",
     title: "Kashmiri Handicrafts Exhibition",
     description: "Showcasing traditional arts and crafts",
     image: PLACEHOLDER_IMAGES.tradition,
@@ -91,7 +106,7 @@ const galleryItems: GalleryItem[] = [
     date: "2024"
   },
   {
-    id: 6,
+    id: "6",
     title: "Traditional Dance Performance",
     description: "Rouf dance performance at cultural event",
     image: PLACEHOLDER_IMAGES.culturalEvent,
@@ -101,7 +116,7 @@ const galleryItems: GalleryItem[] = [
 
   // Landscape
   {
-    id: 7,
+    id: "7",
     title: "Dal Lake at Sunset",
     description: "The iconic Dal Lake with houseboats",
     image: PLACEHOLDER_IMAGES.kashmir1,
@@ -110,7 +125,7 @@ const galleryItems: GalleryItem[] = [
     featured: true
   },
   {
-    id: 8,
+    id: "8",
     title: "Mountain Ranges of Kashmir",
     description: "Snow-capped peaks of the Himalayas",
     image: PLACEHOLDER_IMAGES.kashmir3,
@@ -118,7 +133,7 @@ const galleryItems: GalleryItem[] = [
     location: "Kashmir"
   },
   {
-    id: 9,
+    id: "9",
     title: "Mughal Gardens",
     description: "Historic gardens in full bloom",
     image: PLACEHOLDER_IMAGES.kashmir2,
@@ -128,7 +143,7 @@ const galleryItems: GalleryItem[] = [
 
   // Community
   {
-    id: 10,
+    id: "10",
     title: "Volunteer Team Meeting",
     description: "Planning committee for upcoming events",
     image: PLACEHOLDER_IMAGES.team,
@@ -136,7 +151,7 @@ const galleryItems: GalleryItem[] = [
     date: "2024"
   },
   {
-    id: 11,
+    id: "11",
     title: "Youth Workshop",
     description: "Teaching Kashmiri language to children",
     image: PLACEHOLDER_IMAGES.community,
@@ -144,7 +159,7 @@ const galleryItems: GalleryItem[] = [
     date: "2024"
   },
   {
-    id: 12,
+    id: "12",
     title: "Senior Citizens Gathering",
     description: "Elders sharing stories and traditions",
     image: PLACEHOLDER_IMAGES.community,
@@ -154,7 +169,7 @@ const galleryItems: GalleryItem[] = [
 
   // Heritage
   {
-    id: 13,
+    id: "13",
     title: "Historic Mosque Architecture",
     description: "Traditional Kashmiri wooden architecture",
     image: PLACEHOLDER_IMAGES.kashmir1,
@@ -162,7 +177,7 @@ const galleryItems: GalleryItem[] = [
     location: "Kashmir"
   },
   {
-    id: 14,
+    id: "14",
     title: "Traditional Craftsmanship",
     description: "Artisan working on Paper Mache",
     image: PLACEHOLDER_IMAGES.tradition,
@@ -170,7 +185,7 @@ const galleryItems: GalleryItem[] = [
     date: "2024"
   },
   {
-    id: 15,
+    id: "15",
     title: "Cultural Artifacts Display",
     description: "Historic items from Kashmir",
     image: PLACEHOLDER_IMAGES.tradition,
@@ -206,11 +221,11 @@ export default function GalleryPage() {
     ? gallery.items.map((item, index) => {
         const record = item as Record<string, unknown>;
         return {
-          id: Number(record.id ?? index + 1),
+          id: String(record.id ?? index + 1),
           title: typeof record.title === "string" ? record.title : "Gallery photo",
           description: typeof record.description === "string" ? record.description : "",
           image: safeImageUrl(record.image, PLACEHOLDER_IMAGES.community),
-          category: (typeof record.category === "string" ? record.category : "community") as GalleryCategory,
+          category: toGalleryCategory(record.category),
           date: typeof record.date === "string" ? record.date : undefined,
           location: typeof record.location === "string" ? record.location : undefined,
           featured: record.featured === "yes",
@@ -225,17 +240,31 @@ export default function GalleryPage() {
       .catch(() => setCmsContent(null));
   }, []);
 
-  const filteredItems = selectedCategory === "all"
-    ? cmsGalleryItems
-    : cmsGalleryItems.filter(item => item.category === selectedCategory);
+
 
   const featuredItems = cmsGalleryItems.filter(item => item.featured);
-  const currentCategoryData = categoryData.map((category) => ({
-    ...category,
-    count: category.value === "all"
-      ? cmsGalleryItems.length
-      : cmsGalleryItems.filter((item) => item.category === category.value).length,
-  }));
+  // An empty filter is not a browsing choice, it is a dead end that makes a
+  // small collection look broken. Show a category once it has a photo.
+  const currentCategoryData = categoryData
+    .map((category) => ({
+      ...category,
+      count: category.value === "all"
+        ? cmsGalleryItems.length
+        : cmsGalleryItems.filter((item) => item.category === category.value).length,
+    }))
+    .filter((category) => category.value === "all" || category.count > 0);
+
+  // The selected category can disappear when the client-side fetch replaces the
+  // items, which would otherwise leave an empty grid and no active button.
+  const activeCategory = currentCategoryData.some(
+    (category) => category.value === selectedCategory,
+  )
+    ? selectedCategory
+    : "all";
+
+  const filteredItems = activeCategory === "all"
+    ? cmsGalleryItems
+    : cmsGalleryItems.filter(item => item.category === activeCategory);
 
   return (
     <div className="min-h-screen">
@@ -319,7 +348,7 @@ export default function GalleryPage() {
                   return (
                     <Button
                       key={category.value}
-                      variant={selectedCategory === category.value ? "default" : "outline"}
+                      variant={activeCategory === category.value ? "default" : "outline"}
                       onClick={() => setSelectedCategory(category.value as GalleryCategory)}
                       className="flex items-center gap-2"
                     >
