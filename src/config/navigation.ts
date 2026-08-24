@@ -11,7 +11,7 @@ export const mainNav: NavItem[] = [
     href: "/about",
   },
   {
-    title: "Patron",
+    title: "Patronship",
     href: "/patron",
   },
   {
