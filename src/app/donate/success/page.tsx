@@ -4,9 +4,28 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { CheckCircle, Heart, Users, Download, Mail } from "lucide-react";
 import { motion } from "framer-motion";
+import { siteConfig } from "@/config/site";
+
+/**
+ * Share the public site, never the current URL — this page carries the donor's
+ * Stripe session id in a query param.
+ */
+const SHARE_URL = siteConfig.url;
+const SHARE_TEXT =
+  "I just supported KGNA, preserving Kashmiri culture and community across North America.";
+
+function openShareWindow(href: string) {
+  window.open(href, "_blank", "noopener,noreferrer,width=600,height=520");
+}
 
 function DonationSuccessContent() {
   const searchParams = useSearchParams();
@@ -44,7 +63,9 @@ function DonationSuccessContent() {
                 </div>
               </motion.div>
 
-              <CardTitle className="text-3xl font-serif mb-2">Thank You!</CardTitle>
+              <CardTitle className="text-3xl font-serif mb-2">
+                Thank You!
+              </CardTitle>
               <CardDescription className="text-lg">
                 Your donation has been successfully processed
               </CardDescription>
@@ -54,8 +75,9 @@ function DonationSuccessContent() {
               {/* Success Message */}
               <div className="text-center space-y-4">
                 <p className="text-muted-foreground">
-                  Your generosity directly supports our mission to preserve Kashmiri culture
-                  and strengthen our community across North America.
+                  Your generosity directly supports our mission to preserve
+                  Kashmiri culture and strengthen our community across North
+                  America.
                 </p>
 
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -71,9 +93,12 @@ function DonationSuccessContent() {
                   <div className="flex gap-3">
                     <Heart className="h-5 w-5 text-primary flex-shrink-0" />
                     <div>
-                      <p className="font-medium">You&apos;re making a difference</p>
+                      <p className="font-medium">
+                        You&apos;re making a difference
+                      </p>
                       <p className="text-muted-foreground">
-                        Your support helps us organize cultural events, educational programs, and community initiatives.
+                        Your support helps us organize cultural events,
+                        educational programs, and community initiatives.
                       </p>
                     </div>
                   </div>
@@ -83,7 +108,8 @@ function DonationSuccessContent() {
                     <div>
                       <p className="font-medium">Join our community</p>
                       <p className="text-muted-foreground">
-                        Follow us on social media and attend our events to stay connected.
+                        Follow us on social media and attend our events to stay
+                        connected.
                       </p>
                     </div>
                   </div>
@@ -94,7 +120,8 @@ function DonationSuccessContent() {
                       <div>
                         <p className="font-medium">Manage your donation</p>
                         <p className="text-muted-foreground">
-                          You can update or cancel your recurring donation anytime through the link in your email.
+                          You can update or cancel your recurring donation
+                          anytime through the link in your email.
                         </p>
                       </div>
                     </div>
@@ -122,10 +149,26 @@ function DonationSuccessContent() {
                   Help spread the word about our mission
                 </p>
                 <div className="flex justify-center gap-3">
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      openShareWindow(
+                        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SHARE_URL)}`,
+                      )
+                    }
+                  >
                     Share on Facebook
                   </Button>
-                  <Button size="sm" variant="outline">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() =>
+                      openShareWindow(
+                        `https://twitter.com/intent/tweet?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`,
+                      )
+                    }
+                  >
                     Share on Twitter
                   </Button>
                 </div>
@@ -138,7 +181,8 @@ function DonationSuccessContent() {
             <p>
               KGNA is a 501(c)(3) tax-exempt organization.
               <br />
-              Your donation is tax-deductible to the fullest extent allowed by law.
+              Your donation is tax-deductible to the fullest extent allowed by
+              law.
             </p>
           </div>
         </motion.div>
