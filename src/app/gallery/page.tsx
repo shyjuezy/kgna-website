@@ -29,6 +29,21 @@ import type { CmsPageContent } from "@/lib/cms";
 // Gallery categories
 type GalleryCategory = "all" | "events" | "culture" | "landscape" | "community" | "heritage";
 
+/**
+ * The admin offered a different set of category names for a while, so stored
+ * photos still carry them. Map them onto the filters this page actually shows,
+ * otherwise those photos are only reachable under "All Photos".
+ */
+const LEGACY_CATEGORIES: Record<string, GalleryCategory> = {
+  nature: "landscape",
+  people: "community",
+};
+
+function toGalleryCategory(raw: unknown): GalleryCategory {
+  if (typeof raw !== "string") return "community";
+  return LEGACY_CATEGORIES[raw] ?? (raw as GalleryCategory);
+}
+
 type GalleryItem = {
   id: number;
   title: string;
@@ -210,7 +225,7 @@ export default function GalleryPage() {
           title: typeof record.title === "string" ? record.title : "Gallery photo",
           description: typeof record.description === "string" ? record.description : "",
           image: safeImageUrl(record.image, PLACEHOLDER_IMAGES.community),
-          category: (typeof record.category === "string" ? record.category : "community") as GalleryCategory,
+          category: toGalleryCategory(record.category),
           date: typeof record.date === "string" ? record.date : undefined,
           location: typeof record.location === "string" ? record.location : undefined,
           featured: record.featured === "yes",
@@ -225,17 +240,31 @@ export default function GalleryPage() {
       .catch(() => setCmsContent(null));
   }, []);
 
-  const filteredItems = selectedCategory === "all"
-    ? cmsGalleryItems
-    : cmsGalleryItems.filter(item => item.category === selectedCategory);
+
 
   const featuredItems = cmsGalleryItems.filter(item => item.featured);
-  const currentCategoryData = categoryData.map((category) => ({
-    ...category,
-    count: category.value === "all"
-      ? cmsGalleryItems.length
-      : cmsGalleryItems.filter((item) => item.category === category.value).length,
-  }));
+  // An empty filter is not a browsing choice, it is a dead end that makes a
+  // small collection look broken. Show a category once it has a photo.
+  const currentCategoryData = categoryData
+    .map((category) => ({
+      ...category,
+      count: category.value === "all"
+        ? cmsGalleryItems.length
+        : cmsGalleryItems.filter((item) => item.category === category.value).length,
+    }))
+    .filter((category) => category.value === "all" || category.count > 0);
+
+  // The selected category can disappear when the client-side fetch replaces the
+  // items, which would otherwise leave an empty grid and no active button.
+  const activeCategory = currentCategoryData.some(
+    (category) => category.value === selectedCategory,
+  )
+    ? selectedCategory
+    : "all";
+
+  const filteredItems = activeCategory === "all"
+    ? cmsGalleryItems
+    : cmsGalleryItems.filter(item => item.category === activeCategory);
 
   return (
     <div className="min-h-screen">
@@ -319,7 +348,7 @@ export default function GalleryPage() {
                   return (
                     <Button
                       key={category.value}
-                      variant={selectedCategory === category.value ? "default" : "outline"}
+                      variant={activeCategory === category.value ? "default" : "outline"}
                       onClick={() => setSelectedCategory(category.value as GalleryCategory)}
                       className="flex items-center gap-2"
                     >
