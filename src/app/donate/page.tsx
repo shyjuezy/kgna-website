@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
 import { PayPalDonateButton } from "@/components/donations/paypal-donate-button";
+import { CopyHandle } from "@/components/donations/copy-handle";
 import {
   getCmsPage,
   getSection,
@@ -78,19 +79,11 @@ export default async function DonatePage({
     "zelleHandle",
     "treasurer@kgna.us",
   ).trim();
-  // TODO(next PR): replace with the real hosted donate link from the KGNA
-  // PayPal business account (PayPal.com/donate/buttons -> hosted_button_id),
-  // ideally by setting directGiving.paypalUrl in the CMS rather than here.
-  // Until then this placeholder renders a button that goes nowhere useful, so
-  // the UI labels it as not-yet-live instead of pretending to accept money.
-  const PAYPAL_URL_PLACEHOLDER =
-    "https://www.paypal.com/donate/?hosted_button_id=REPLACE_ME";
-  const paypalUrl = textProp(
-    directGiving,
-    "paypalUrl",
-    PAYPAL_URL_PLACEHOLDER,
-  ).trim();
-  const paypalIsPlaceholder = paypalUrl === PAYPAL_URL_PLACEHOLDER;
+  // No placeholder link: the band below renders PayPal as "opening soon" copy
+  // when this is unset, so an unconfigured method is a sentence rather than a
+  // button that goes nowhere. Set directGiving.paypalUrl in the admin with the
+  // hosted donate link from the KGNA PayPal business account.
+  const paypalUrl = textProp(directGiving, "paypalUrl", "").trim();
   const supportReasons = listProp(support, "items", reasons);
   // Amount + impact rows are authored in the admin (donate > Tiers > Items).
   // Empty falls back to the built-in tiers in @/config/donation-tiers.
@@ -214,59 +207,6 @@ export default async function DonatePage({
                 />
               </div>
 
-              {/* Direct giving - Zelle and PayPal. Zelle has no merchant API,
-                  so it can only ever be handle-plus-instructions: nothing
-                  confirms the transfer back to us. PayPal renders only once a
-                  URL is configured, so an unset value shows nothing rather
-                  than a dead donate button. */}
-              {zelleHandle || paypalUrl ? (
-                <div className="rounded-lg border p-6 space-y-5">
-                  <h3 className="font-semibold">
-                    {textProp(directGiving, "heading", "Direct giving")}
-                  </h3>
-
-                  {zelleHandle ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Zelle</p>
-                      <p className="rounded-md bg-primary/5 px-3 py-2 font-mono text-sm break-all select-all">
-                        {zelleHandle}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {textProp(
-                          directGiving,
-                          "zelleNote",
-                          "Send from your banking app to the address above, and include your name so we can match the gift to you.",
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {textProp(
-                          directGiving,
-                          "zelleReceiptNote",
-                          "Zelle gifts do not generate an automatic receipt - email us and we will send an acknowledgement for your records.",
-                        )}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {paypalUrl ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">PayPal</p>
-                      <PayPalDonateButton
-                        href={paypalUrl}
-                        label={textProp(directGiving, "paypalLabel", "Donate")}
-                        className={paypalIsPlaceholder ? "opacity-60" : undefined}
-                      />
-                      {paypalIsPlaceholder ? (
-                        <p className="text-xs text-muted-foreground">
-                          Placeholder link - set directGiving.paypalUrl in the
-                          admin before announcing PayPal giving.
-                        </p>
-                      ) : null}
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
               {/* Other Ways to Give */}
               <div className="bg-muted/30 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3">
@@ -314,6 +254,147 @@ export default async function DonatePage({
           </div>
         </div>
       </section>
+
+      {/* Direct giving. Promoted out of the sidebar into a full-width band so
+          card, Zelle and PayPal read as three peers rather than the form plus
+          two footnotes - and so the page closes on something other than the
+          submit button. Zelle has no merchant API, so it can only ever be
+          handle-plus-instructions: nothing confirms the transfer back to us. */}
+      {zelleHandle || paypalUrl ? (
+        <section className="pb-16">
+          <div className="container mx-auto px-4">
+            <div className="relative overflow-hidden rounded-lg bg-secondary px-6 py-10 sm:px-8 sm:py-12">
+              {/* Khatamband, the interlocking lattice of a Kashmiri ceiling. */}
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.16]"
+              >
+                <defs>
+                  <pattern
+                    id="khatamband"
+                    width="28"
+                    height="28"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      d="M0 14 L14 0 L28 14 L14 28 Z"
+                      fill="none"
+                      stroke="#FFC439"
+                      strokeWidth="1"
+                    />
+                    <path
+                      d="M14 0 V28 M0 14 H28"
+                      stroke="#FFC439"
+                      strokeWidth="0.6"
+                      opacity="0.55"
+                    />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#khatamband)" />
+              </svg>
+
+              <div className="relative mx-auto max-w-5xl">
+                <div className="mb-8 text-center">
+                  <h2 className="font-serif text-2xl font-bold text-secondary-foreground sm:text-3xl">
+                    {textProp(
+                      directGiving,
+                      "heading",
+                      "Three ways to send your gift",
+                    )}
+                  </h2>
+                  <p className="mt-2 text-sm text-secondary-foreground/70">
+                    {textProp(
+                      directGiving,
+                      "body",
+                      "Use whichever you already trust - all three reach the same place.",
+                    )}
+                  </p>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  {/* Card is not an action here: the form above already is. */}
+                  <div className="flex flex-col gap-3 rounded-lg border border-dashed border-white/15 bg-white/[0.03] p-6">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFC439]">
+                      Above, on this page
+                    </span>
+                    <h3 className="font-serif text-lg font-semibold text-secondary-foreground">
+                      Card
+                    </h3>
+                    <p className="flex-1 text-sm text-secondary-foreground/70">
+                      One-time, monthly or annual, with an emailed receipt and
+                      an instant tax acknowledgement.
+                    </p>
+                    <div className="grid h-11 place-items-center rounded-md border border-white/20 text-sm text-secondary-foreground/60">
+                      Use the form above
+                    </div>
+                  </div>
+
+                  {zelleHandle ? (
+                    <div className="flex flex-col gap-3 rounded-lg border border-white/15 bg-white/[0.06] p-6">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFC439]">
+                        No processing fee
+                      </span>
+                      <h3 className="font-serif text-lg font-semibold text-secondary-foreground">
+                        Zelle
+                      </h3>
+                      <p className="flex-1 text-sm text-secondary-foreground/70">
+                        {textProp(
+                          directGiving,
+                          "zelleNote",
+                          "Bank to bank, so the full amount arrives. Include your name so we can match the gift to you.",
+                        )}
+                      </p>
+                      <CopyHandle value={zelleHandle} />
+                      <p className="text-xs text-secondary-foreground/60">
+                        {textProp(
+                          directGiving,
+                          "zelleReceiptNote",
+                          "Zelle sends no receipt - email us and we will send an acknowledgement for your records.",
+                        )}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {paypalUrl ? (
+                    <div className="flex flex-col gap-3 rounded-lg border border-white/15 bg-white/[0.06] p-6">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFC439]">
+                        Familiar checkout
+                      </span>
+                      <h3 className="font-serif text-lg font-semibold text-secondary-foreground">
+                        PayPal
+                      </h3>
+                      <p className="flex-1 text-sm text-secondary-foreground/70">
+                        Pay from your PayPal balance or a linked card, without
+                        re-entering your details.
+                      </p>
+                      <PayPalDonateButton
+                        href={paypalUrl}
+                        label={textProp(directGiving, "paypalLabel", "Donate")}
+                      />
+                    </div>
+                  ) : (
+                    /* Unset is a designed state, not a disabled button: a
+                       method that cannot take money should not look like a
+                       control a donor can press. */
+                    <div className="flex flex-col gap-3 rounded-lg border border-dashed border-white/15 bg-white/[0.03] p-6">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#FFC439]">
+                        Opening soon
+                      </span>
+                      <h3 className="font-serif text-lg font-semibold text-secondary-foreground">
+                        PayPal
+                      </h3>
+                      <p className="flex-1 text-sm text-secondary-foreground/70">
+                        We are finishing setup with PayPal. Until then, card and
+                        Zelle both work today.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
