@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
+import { PayPalDonateButton } from "@/components/donations/paypal-donate-button";
+import { CopyHandle } from "@/components/donations/copy-handle";
 import {
   getCmsPage,
   getSection,
@@ -77,9 +79,15 @@ export default async function DonatePage({
     "zelleHandle",
     "treasurer@kgna.us",
   ).trim();
-  // Unset until someone supplies the real PayPal target; the block stays
-  // hidden rather than shipping a guessed donate link.
-  const paypalUrl = textProp(directGiving, "paypalUrl", "").trim();
+  // The button always renders; the real target arrives from the CMS. Until
+  // directGiving.paypalUrl is set in the admin to the hosted donate link from
+  // the KGNA PayPal business account, this falls back to PayPal's home page -
+  // which is not a donation destination, so set it before promoting PayPal.
+  const paypalUrl = textProp(
+    directGiving,
+    "paypalUrl",
+    "https://www.paypal.com/",
+  ).trim();
   const supportReasons = listProp(support, "items", reasons);
   // Amount + impact rows are authored in the admin (donate > Tiers > Items).
   // Empty falls back to the built-in tiers in @/config/donation-tiers.
@@ -131,6 +139,84 @@ export default async function DonatePage({
           </div>
         </div>
       </section>
+
+      {/* Direct giving. A ledger rail rather than a block: it sits above the
+          form, so it has to stay short enough that a donor scrolls past it
+          rather than over it. Card is listed for completeness but is not an
+          action here - it links down to the form, which is the real control.
+          Zelle has no merchant API, so it can only ever be handle-plus-
+          instructions: nothing confirms the transfer back to us. */}
+      {zelleHandle || paypalUrl ? (
+        <section className="pt-4 pb-2">
+          <div className="container mx-auto px-4">
+            <div className="overflow-hidden rounded-lg border bg-card">
+              <div className="h-[3px] bg-secondary" />
+              <div className="grid divide-y lg:grid-cols-[19rem_repeat(2,minmax(0,1fr))] lg:divide-x lg:divide-y-0">
+                {/* The card route has no cell of its own: it is not a choice
+                    offered inside this rail, it is the form underneath. Naming
+                    it here and linking down costs a line instead of a column,
+                    and keeps the rail an accommodation rather than a menu that
+                    reopens a decision the donor has already made. */}
+                <div className="flex flex-col justify-center p-6">
+                  <h2 className="font-serif text-lg font-bold">
+                    {textProp(
+                      directGiving,
+                      "heading",
+                      "Rather not use a card?",
+                    )}
+                  </h2>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {textProp(
+                      directGiving,
+                      "body",
+                      "Card gifts \u2014 one-time, monthly or annual \u2014 are handled by the form below.",
+                    )}
+                  </p>
+                  <a
+                    href="#donation-form"
+                    className="mt-3 self-start border-b border-primary/40 pb-px text-xs font-medium text-primary transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    Go to the form &rarr;
+                  </a>
+                </div>
+
+                {zelleHandle ? (
+                  <div className="flex flex-col gap-2 p-6">
+                    <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-accent">
+                      No processing fee
+                    </span>
+                    <p className="text-sm font-semibold">Zelle</p>
+                    <p className="flex-1 text-xs text-muted-foreground">
+                      Bank to bank, so the full amount arrives. Include your
+                      name so we can match the gift to you.
+                    </p>
+                    <CopyHandle value={zelleHandle} />
+                    <p className="text-[11px] text-muted-foreground">
+                      No automatic receipt &mdash; email us and we&apos;ll
+                      acknowledge it for your records.
+                    </p>
+                  </div>
+                ) : null}
+
+                <div className="flex flex-col gap-2 p-6">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-accent">
+                    Familiar checkout
+                  </span>
+                  <p className="text-sm font-semibold">PayPal</p>
+                  <p className="flex-1 text-xs text-muted-foreground">
+                    Pay from your PayPal balance or a card already linked to
+                    your account.
+                  </p>
+                  <PayPalDonateButton
+                    href={paypalUrl}
+                    label={textProp(directGiving, "paypalLabel", "Donate")}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {/* Main Content */}
       <section className="py-12">
@@ -203,61 +289,6 @@ export default async function DonatePage({
                 />
               </div>
 
-              {/* Direct giving - Zelle and PayPal. Zelle has no merchant API,
-                  so it can only ever be handle-plus-instructions: nothing
-                  confirms the transfer back to us. PayPal renders only once a
-                  URL is configured, so an unset value shows nothing rather
-                  than a dead donate button. */}
-              {zelleHandle || paypalUrl ? (
-                <div className="rounded-lg border p-6 space-y-5">
-                  <h3 className="font-semibold">
-                    {textProp(directGiving, "heading", "Direct giving")}
-                  </h3>
-
-                  {zelleHandle ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">Zelle</p>
-                      <p className="rounded-md bg-primary/5 px-3 py-2 font-mono text-sm break-all select-all">
-                        {zelleHandle}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {textProp(
-                          directGiving,
-                          "zelleNote",
-                          "Send from your banking app to the address above, and include your name so we can match the gift to you.",
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {textProp(
-                          directGiving,
-                          "zelleReceiptNote",
-                          "Zelle gifts do not generate an automatic receipt - email us and we will send an acknowledgement for your records.",
-                        )}
-                      </p>
-                    </div>
-                  ) : null}
-
-                  {paypalUrl ? (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium">PayPal</p>
-                      <Button asChild variant="outline" className="w-full">
-                        <a
-                          href={paypalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {textProp(
-                            directGiving,
-                            "paypalLabel",
-                            "Donate with PayPal",
-                          )}
-                        </a>
-                      </Button>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
               {/* Other Ways to Give */}
               <div className="bg-muted/30 p-6 rounded-lg">
                 <h3 className="font-semibold mb-3">
@@ -285,7 +316,7 @@ export default async function DonatePage({
             </div>
 
             {/* Right Column - Form */}
-            <div className="lg:col-span-2 space-y-6">
+            <div id="donation-form" className="lg:col-span-2 space-y-6 scroll-mt-20">
               {/* Patron route for donors who want the annual commitment. */}
               <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <p className="text-sm text-muted-foreground">
@@ -305,6 +336,7 @@ export default async function DonatePage({
           </div>
         </div>
       </section>
+
     </div>
   );
 }

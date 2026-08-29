@@ -86,3 +86,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* The donate page's direct-giving rail links down to the donation form. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}

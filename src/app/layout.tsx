@@ -5,6 +5,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { siteConfig } from "@/config/site";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "@/styles/globals.css";
 
 const inter = Inter({
@@ -91,6 +92,7 @@ export default function RootLayout({
           </div>
           <Toaster />
         </ThemeProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
