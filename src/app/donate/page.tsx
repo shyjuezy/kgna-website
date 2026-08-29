@@ -151,33 +151,32 @@ export default async function DonatePage({
           <div className="container mx-auto px-4">
             <div className="overflow-hidden rounded-lg border bg-card">
               <div className="h-[3px] bg-secondary" />
-              <div className="grid divide-y lg:grid-cols-[16rem_repeat(3,minmax(0,1fr))] lg:divide-x lg:divide-y-0">
+              <div className="grid divide-y lg:grid-cols-[19rem_repeat(2,minmax(0,1fr))] lg:divide-x lg:divide-y-0">
+                {/* The card route has no cell of its own: it is not a choice
+                    offered inside this rail, it is the form underneath. Naming
+                    it here and linking down costs a line instead of a column,
+                    and keeps the rail an accommodation rather than a menu that
+                    reopens a decision the donor has already made. */}
                 <div className="flex flex-col justify-center p-6">
                   <h2 className="font-serif text-lg font-bold">
-                    {textProp(directGiving, "heading", "Three ways to give")}
+                    {textProp(
+                      directGiving,
+                      "heading",
+                      "Rather not use a card?",
+                    )}
                   </h2>
                   <p className="mt-1 text-xs text-muted-foreground">
                     {textProp(
                       directGiving,
                       "body",
-                      "All reach the same place.",
+                      "Card gifts \u2014 one-time, monthly or annual \u2014 are handled by the form below.",
                     )}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 p-6">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.13em] text-accent">
-                    Below on this page
-                  </span>
-                  <p className="text-sm font-semibold">Card</p>
-                  <p className="flex-1 text-xs text-muted-foreground">
-                    One-time, monthly or annual, with an emailed receipt.
                   </p>
                   <a
                     href="#donation-form"
-                    className="rounded-md border border-dashed px-3 py-2 text-center text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="mt-3 self-start border-b border-primary/40 pb-px text-xs font-medium text-primary transition-colors hover:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    Use the form below
+                    Go to the form &rarr;
                   </a>
                 </div>
 
@@ -193,8 +192,8 @@ export default async function DonatePage({
                     </p>
                     <CopyHandle value={zelleHandle} />
                     <p className="text-[11px] text-muted-foreground">
-                      No automatic receipt - email us and we will acknowledge
-                      it for your records.
+                      No automatic receipt &mdash; email us and we&apos;ll
+                      acknowledge it for your records.
                     </p>
                   </div>
                 ) : null}
@@ -205,7 +204,8 @@ export default async function DonatePage({
                   </span>
                   <p className="text-sm font-semibold">PayPal</p>
                   <p className="flex-1 text-xs text-muted-foreground">
-                    Pay from your balance or a linked card.
+                    Pay from your PayPal balance or a card already linked to
+                    your account.
                   </p>
                   <PayPalDonateButton
                     href={paypalUrl}
