@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DONATION_PRODUCTS } from "@/config/donation-tiers";
@@ -122,9 +123,20 @@ export function AmountSelector({ frequency, selectedAmount, onAmountChange, conf
           Monthly donations provide sustainable support for our programs
         </p>
       )}
+      {/* The one thing /patron says that the Annual tab does not: what a donor
+          gets back. Sits here rather than in a banner above the form, because a
+          link out to the patron page only ever led back to this form with this
+          frequency already selected. */}
       {frequency === 'annual' && (
         <p className="text-xs text-muted-foreground text-center">
-          Save time with an annual donation and provide year-long support
+          Annual donors are acknowledged as patrons in our annual programme, or
+          stay anonymous.{" "}
+          <Link
+            href="/patron"
+            className="text-primary underline-offset-2 hover:underline"
+          >
+            See patron levels
+          </Link>
         </p>
       )}
     </div>
