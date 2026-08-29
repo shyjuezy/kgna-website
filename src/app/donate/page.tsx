@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
+import { PayPalDonateButton } from "@/components/donations/paypal-donate-button";
 import {
   getCmsPage,
   getSection,
@@ -77,9 +78,19 @@ export default async function DonatePage({
     "zelleHandle",
     "treasurer@kgna.us",
   ).trim();
-  // Unset until someone supplies the real PayPal target; the block stays
-  // hidden rather than shipping a guessed donate link.
-  const paypalUrl = textProp(directGiving, "paypalUrl", "").trim();
+  // TODO(next PR): replace with the real hosted donate link from the KGNA
+  // PayPal business account (PayPal.com/donate/buttons -> hosted_button_id),
+  // ideally by setting directGiving.paypalUrl in the CMS rather than here.
+  // Until then this placeholder renders a button that goes nowhere useful, so
+  // the UI labels it as not-yet-live instead of pretending to accept money.
+  const PAYPAL_URL_PLACEHOLDER =
+    "https://www.paypal.com/donate/?hosted_button_id=REPLACE_ME";
+  const paypalUrl = textProp(
+    directGiving,
+    "paypalUrl",
+    PAYPAL_URL_PLACEHOLDER,
+  ).trim();
+  const paypalIsPlaceholder = paypalUrl === PAYPAL_URL_PLACEHOLDER;
   const supportReasons = listProp(support, "items", reasons);
   // Amount + impact rows are authored in the admin (donate > Tiers > Items).
   // Empty falls back to the built-in tiers in @/config/donation-tiers.
@@ -240,19 +251,17 @@ export default async function DonatePage({
                   {paypalUrl ? (
                     <div className="space-y-2">
                       <p className="text-sm font-medium">PayPal</p>
-                      <Button asChild variant="outline" className="w-full">
-                        <a
-                          href={paypalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {textProp(
-                            directGiving,
-                            "paypalLabel",
-                            "Donate with PayPal",
-                          )}
-                        </a>
-                      </Button>
+                      <PayPalDonateButton
+                        href={paypalUrl}
+                        label={textProp(directGiving, "paypalLabel", "Donate")}
+                        className={paypalIsPlaceholder ? "opacity-60" : undefined}
+                      />
+                      {paypalIsPlaceholder ? (
+                        <p className="text-xs text-muted-foreground">
+                          Placeholder link - set directGiving.paypalUrl in the
+                          admin before announcing PayPal giving.
+                        </p>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
