@@ -1,7 +1,5 @@
 import { Metadata } from "next";
 import Image from "next/image";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { DonationForm } from "@/components/donations/donation-form";
 import { PayPalDonateButton } from "@/components/donations/paypal-donate-button";
 import { CopyHandle } from "@/components/donations/copy-handle";
@@ -317,16 +315,6 @@ export default async function DonatePage({
 
             {/* Right Column - Form */}
             <div id="donation-form" className="lg:col-span-2 space-y-6 scroll-mt-20">
-              {/* Patron route for donors who want the annual commitment. */}
-              <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground">
-                  Prefer an annual commitment? Patrons fund a full year of
-                  programming.
-                </p>
-                <Button asChild variant="outline" className="shrink-0">
-                  <Link href="/patron">Become a patron</Link>
-                </Button>
-              </div>
               <DonationForm
                 tiers={donationTiers}
                 defaultFrequency={requestedFrequency}
