@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { stripe } from "@/lib/stripe";
+import { donorCheckoutFields, stripe } from "@/lib/stripe";
 import { DONATION_PRODUCTS } from "@/config/donation-tiers";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { frequency, amount, coverFees, donorInfo } = body;
+    const { frequency, amount, coverFees, subscribeToNewsletter } = body;
 
     // For subscriptions, we need to use pre-created price IDs or create them dynamically
     const config = DONATION_PRODUCTS[frequency as "monthly" | "annual"];
@@ -26,10 +26,7 @@ export async function POST(request: NextRequest) {
     if (!priceId || isPlaceholderPriceId(priceId)) {
       const product = await stripe.products.create({
         name: `${frequency === "monthly" ? "Monthly" : "Annual"} Donation to KGNA`,
-        description:
-          donorInfo.isHonorarium && donorInfo.honorariumName
-            ? `In ${donorInfo.honorariumName}`
-            : "Recurring support for our mission",
+        description: "Recurring support for our mission",
       });
 
       const price = await stripe.prices.create({
@@ -48,7 +45,7 @@ export async function POST(request: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
-      customer_email: donorInfo.email,
+      ...donorCheckoutFields,
       line_items: [
         {
           price: priceId,
@@ -57,22 +54,13 @@ export async function POST(request: NextRequest) {
       ],
       metadata: {
         donationType: frequency,
-        firstName: donorInfo.firstName,
-        lastName: donorInfo.lastName,
-        phone: donorInfo.phone || "",
-        isHonorarium: donorInfo.isHonorarium ? "true" : "false",
-        honorariumName: donorInfo.honorariumName || "",
-        subscribeToNewsletter: donorInfo.subscribeToNewsletter
-          ? "true"
-          : "false",
+        subscribeToNewsletter: subscribeToNewsletter ? "true" : "false",
         coverFees: coverFees ? "true" : "false",
         customAmount: amount.toString(),
       },
       subscription_data: {
         metadata: {
           donationType: frequency,
-          firstName: donorInfo.firstName,
-          lastName: donorInfo.lastName,
         },
       },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/donate/success?session_id={CHECKOUT_SESSION_ID}`,

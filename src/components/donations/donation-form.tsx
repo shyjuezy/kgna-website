@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,11 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { FrequencyToggle } from "./frequency-toggle";
 import { AmountSelector } from "./amount-selector";
-import { DonorInfoForm } from "./donor-info-form";
 import { resolveDonationProducts } from "@/config/donation-tiers";
 import type { CmsDonationTier } from "@/config/donation-tiers";
 import { Heart, Shield, Loader2 } from "lucide-react";
-import type { DonationFormData, DonorInfo } from "@/types";
 
 interface DonationFormProps {
   defaultFrequency?: "one-time" | "monthly" | "annual";
@@ -28,13 +25,14 @@ interface DonationFormProps {
 }
 
 // Annual is the default: it is the frequency we promote as "Most Impact".
+// Name, email and an optional honor/memory dedication are collected on the
+// Stripe Checkout page, so this form is only the gift itself and one click.
 export function DonationForm({
   defaultFrequency = "annual",
   defaultAmount,
   tiers,
 }: DonationFormProps) {
   const products = resolveDonationProducts(tiers);
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [frequency, setFrequency] = useState<"one-time" | "monthly" | "annual">(
     defaultFrequency,
@@ -43,15 +41,7 @@ export function DonationForm({
     defaultAmount || products[defaultFrequency].default,
   );
   const [coverFees, setCoverFees] = useState(false);
-  const [donorInfo, setDonorInfo] = useState<DonorInfo>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    isHonorarium: false,
-    honorariumName: "",
-    subscribeToNewsletter: true,
-  });
+  const [subscribeToNewsletter, setSubscribeToNewsletter] = useState(true);
 
   const processingFeePercent = 0.03;
   const processingFee = Math.round(amount * processingFeePercent * 100) / 100;
@@ -59,12 +49,6 @@ export function DonationForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validate required fields
-    if (!donorInfo.firstName || !donorInfo.lastName || !donorInfo.email) {
-      alert("Please fill in all required fields");
-      return;
-    }
 
     if (amount < 1) {
       alert("Please select a donation amount");
@@ -88,7 +72,7 @@ export function DonationForm({
           frequency,
           amount: totalAmount,
           coverFees,
-          donorInfo,
+          subscribeToNewsletter,
         }),
       });
 
@@ -156,26 +140,25 @@ export function DonationForm({
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Donor Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Donor Information</CardTitle>
-          <CardDescription>
-            We&apos;ll email you a receipt for your donation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DonorInfoForm donorInfo={donorInfo} onChange={setDonorInfo} />
-        </CardContent>
-      </Card>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="subscribeToNewsletter"
+              checked={subscribeToNewsletter}
+              onCheckedChange={(checked) =>
+                setSubscribeToNewsletter(checked as boolean)
+              }
+            />
+            <Label
+              htmlFor="subscribeToNewsletter"
+              className="text-sm font-normal cursor-pointer"
+            >
+              I&apos;d like to receive updates about KGNA&apos;s work and impact
+            </Label>
+          </div>
 
-      {/* Summary & Submit */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
+          {/* Summary & Submit */}
+          <div className="space-y-4 border-t pt-6">
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">
                 Donation Amount
@@ -218,7 +201,7 @@ export function DonationForm({
                   <Heart className="mr-2 h-5 w-5" />
                   {frequency === "one-time"
                     ? "Donate Now"
-                    : `Start ${frequency} Donation`}
+                    : `Start ${frequency} donation`}
                 </>
               )}
             </Button>
@@ -226,7 +209,9 @@ export function DonationForm({
             <div className="flex flex-col items-center space-y-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Shield className="h-3 w-3" />
-                <span>Secure donation powered by Stripe</span>
+                <span>
+                  Next: your name and card on Stripe&apos;s secure checkout
+                </span>
               </div>
               <p>KGNA is a 501(c)(3) tax-exempt organization</p>
               <p>

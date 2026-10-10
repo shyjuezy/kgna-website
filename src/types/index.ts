@@ -30,21 +30,3 @@ export interface GalleryImage {
   category: string;
   date: Date;
 }
-
-export interface DonorInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  isHonorarium?: boolean;
-  honorariumName?: string;
-  subscribeToNewsletter?: boolean;
-}
-
-export interface DonationFormData {
-  frequency: "one-time" | "monthly" | "annual";
-  amount: number;
-  customAmount?: number;
-  coverFees: boolean;
-  donorInfo: DonorInfo;
-}
