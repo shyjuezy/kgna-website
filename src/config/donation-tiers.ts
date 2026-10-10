@@ -75,8 +75,8 @@ export const DONATION_PRODUCTS: Record<
     ],
   },
   annual: {
-    amounts: [100, 250, 500, 1000],
-    default: 100,
+    amounts: [100, 250, 500, 1000, 5000],
+    default: 1000,
     prices: {
       100:
         process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_100 || "price_annual_100",
@@ -86,6 +86,8 @@ export const DONATION_PRODUCTS: Record<
         process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_500 || "price_annual_500",
       1000:
         process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_1000 || "price_annual_1000",
+      5000:
+        process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL_5000 || "price_annual_5000",
     },
     tiers: [
       {
@@ -103,6 +105,10 @@ export const DONATION_PRODUCTS: Record<
       {
         amount: 1000,
         impact: "Visionary leader in community development",
+      },
+      {
+        amount: 5000,
+        impact: "Sustains major cultural, educational, and community initiatives",
       },
     ],
   },
