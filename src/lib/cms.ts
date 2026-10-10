@@ -18,8 +18,13 @@ export async function getCmsPage(slug: string): Promise<CmsPageContent | null> {
   const baseUrl = cmsApiBaseUrl();
 
   try {
+    // Cached for 5 minutes rather than fetched per request. The admin API
+    // reads Neon, whose free-plan compute only sleeps after 5 idle minutes,
+    // so uncached page views (mostly crawlers) kept it awake around the clock
+    // and on course to exhaust the monthly CU-hours. Admin edits can take up
+    // to this long to appear on the site.
     const response = await fetch(`${baseUrl}/api/public/pages/${slug}`, {
-      cache: "no-store",
+      next: { revalidate: 300 },
     });
 
     if (!response.ok) {
