@@ -29,7 +29,9 @@ export async function POST(request: NextRequest) {
         // Handle successful payment
         console.log('✅ Checkout session completed:', session.id);
 
-        // Extract metadata
+        // Extract metadata. Donor name/email come from customer_details and
+        // the optional dedication from custom_fields (key "tribute") - they
+        // are entered on the Checkout page, not our form.
         const metadata = session.metadata || {};
 
         // TODO: Add donor to database
