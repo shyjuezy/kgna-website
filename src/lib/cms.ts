@@ -10,6 +10,9 @@ export type CmsPageContent = {
 
 const DEFAULT_ADMIN_API_URL = "https://kgna-admin.vercel.app";
 
+/** One tag for every CMS page: home and contact feed several routes each. */
+export const CMS_CACHE_TAG = "cms";
+
 function cmsApiBaseUrl() {
   return (process.env.KGNA_ADMIN_API_URL || DEFAULT_ADMIN_API_URL).replace(/\/$/, "");
 }
@@ -18,13 +21,15 @@ export async function getCmsPage(slug: string): Promise<CmsPageContent | null> {
   const baseUrl = cmsApiBaseUrl();
 
   try {
-    // Cached for 5 minutes rather than fetched per request. The admin API
-    // reads Neon, whose free-plan compute only sleeps after 5 idle minutes,
-    // so uncached page views (mostly crawlers) kept it awake around the clock
-    // and on course to exhaust the monthly CU-hours. Admin edits can take up
-    // to this long to appear on the site.
+    // Cached for a day and cleared on publish: the admin's publish route calls
+    // /api/revalidate, which expires the CMS_CACHE_TAG entries. The admin API
+    // reads Neon, whose free-plan compute only sleeps after 5 idle minutes.
+    // Uncached page views kept it awake around the clock, and even a
+    // 5-minute cache woke it about once a minute, because each slug refreshed
+    // on its own timer. The day-long revalidate is only the fallback for a
+    // publish whose refresh call failed.
     const response = await fetch(`${baseUrl}/api/public/pages/${slug}`, {
-      next: { revalidate: 300 },
+      next: { revalidate: 86400, tags: [CMS_CACHE_TAG] },
     });
 
     if (!response.ok) {
