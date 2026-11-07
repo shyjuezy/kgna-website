@@ -3,3 +3,7 @@ allowBuilds:
   sharp: true
   # Native resolver behind eslint-import-resolver, needed for pnpm lint.
   unrs-resolver: true
+
+# GHSA-g3hv-75wg-m249: TypeScript ESLint still requests vulnerable Minimatch 10.
+overrides:
+  "minimatch@>=7 <11.0.1": "^11.0.1"
